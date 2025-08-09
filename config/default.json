@@ -1,0 +1,39 @@
+{
+    "location": {
+      "latitude": 51.4769,
+      "longitude": -0.2334,
+      "radius_km": 5
+    },
+    "display": {
+      "width": 480,
+      "height": 480,
+      "brightness": 80,
+      "auto_dim": true,
+      "night_mode_start": "22:00",
+      "night_mode_end": "07:00"
+    },
+    "apis": {
+      "adsbexchange": {
+        "endpoint": "https://adsbexchange.com/api/",
+        "rate_limit_ms": 1000
+      },
+      "hexdb": {
+        "endpoint": "https://hexdb.io/api/",
+        "rate_limit_ms": 500
+      },
+      "flightradar24": {
+        "endpoint": "https://api.flightradar24.com/",
+        "rate_limit_ms": 2000
+      }
+    },
+    "alerts": {
+      "audio_enabled": true,
+      "min_altitude_ft": 1000,
+      "max_altitude_ft": 10000
+    },
+    "performance": {
+      "update_interval_ms": 5000,
+      "cache_duration_ms": 30000,
+      "max_flights_display": 10
+    }
+}

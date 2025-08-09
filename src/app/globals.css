@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --width-round: 480px;
+  --height-round: 480px;
+  --radius-round: 240px;
+  --spacing-round: 240px;
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html, body {
+    @apply bg-black text-white;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+}
