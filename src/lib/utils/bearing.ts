@@ -21,6 +21,30 @@ export function calculateBearing(
 }
 
 /**
+ * Calculate the distance between two coordinates in nautical miles
+ * Uses the Haversine formula
+ */
+export function calculateDistance(
+  fromLat: number,
+  fromLon: number,
+  toLat: number,
+  toLon: number
+): number {
+  const R = 3440.065; // Earth's radius in nautical miles
+  const φ1 = (fromLat * Math.PI) / 180;
+  const φ2 = (toLat * Math.PI) / 180;
+  const Δφ = ((toLat - fromLat) * Math.PI) / 180;
+  const Δλ = ((toLon - fromLon) * Math.PI) / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // Distance in nautical miles
+}
+
+/**
  * Convert compass direction letter to degrees
  * N = 0°, E = 90°, S = 180°, W = 270°
  */

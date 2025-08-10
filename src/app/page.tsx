@@ -8,12 +8,12 @@
 //   );
 // }
 
-import FlightTrackingClock from '@/components/FlightTrackingClock';
+import SwipeableScreens from '@/components/SwipeableScreens';
 
 export default function Home() {
   return (
-    <main className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden">
-      <FlightTrackingClock />
+    <main className="w-screen h-screen bg-black overflow-hidden">
+      <SwipeableScreens />
     </main>
   );
 }

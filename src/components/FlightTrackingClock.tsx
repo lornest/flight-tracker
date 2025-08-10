@@ -4,14 +4,27 @@ import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import Clock from './Clock';
 import FlightAlert from './FlightAlert';
-import { useFlightTracking } from '@/hooks/useFlightTracking';
+import { Flight, FlightInfo } from '@/types/flight';
 
-const FlightTrackingClock = () => {
-  const [isAlertActive, setIsAlertActive] = React.useState(false);
-  
-  // Use conditional polling: 5s when alert is active, 30s normally
-  const pollingInterval = isAlertActive ? 5000 : 30000;
-  
+interface FlightTrackingClockProps {
+  sharedFlightData: {
+    flights: Flight[];
+    newFlights: string[];
+    newFlightsWithInfo: Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>;
+    totalFlights: number;
+    lastUpdate: number;
+    userLocation: { latitude: number; longitude: number; facingDirection: string } | undefined;
+    isLoading: boolean;
+    error: string | null;
+    hasNewFlight: boolean;
+    clearNewFlightAlert: () => void;
+    refetch: () => Promise<void>;
+  };
+  isAlertActive: boolean;
+  setIsAlertActive: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const FlightTrackingClock = ({ sharedFlightData, isAlertActive, setIsAlertActive }: FlightTrackingClockProps) => {
   const {
     flights,
     newFlights,
@@ -24,7 +37,7 @@ const FlightTrackingClock = () => {
     hasNewFlight,
     clearNewFlightAlert,
     refetch
-  } = useFlightTracking(pollingInterval);
+  } = sharedFlightData;
 
   // Manage alert state and polling frequency
   React.useEffect(() => {
