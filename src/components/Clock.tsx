@@ -7,22 +7,41 @@ const Clock = () => {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const [secondRotations, setSecondRotations] = useState(0);
+  const [minuteRotations, setMinuteRotations] = useState(0);
+  const [hourRotations, setHourRotations] = useState(0);
 
   useEffect(() => {
     setMounted(true);
-    let prevSeconds = new Date().getSeconds();
+    const initialTime = new Date();
+    let prevSeconds = initialTime.getSeconds();
+    let prevMinutes = initialTime.getMinutes();
+    let prevHours = initialTime.getHours() % 12;
     
     const timer = setInterval(() => {
       const newTime = new Date();
       const currentSeconds = newTime.getSeconds();
+      const currentMinutes = newTime.getMinutes();
+      const currentHours = newTime.getHours() % 12;
       
       // Check if seconds wrapped from 59 to 0
       if (prevSeconds === 59 && currentSeconds === 0) {
         setSecondRotations(prev => prev + 360);
       }
       
+      // Check if minutes wrapped from 59 to 0
+      if (prevMinutes === 59 && currentMinutes === 0) {
+        setMinuteRotations(prev => prev + 360);
+      }
+      
+      // Check if hours wrapped from 11 to 0 (12-hour format)
+      if (prevHours === 11 && currentHours === 0) {
+        setHourRotations(prev => prev + 360);
+      }
+      
       setTime(newTime);
       prevSeconds = currentSeconds;
+      prevMinutes = currentMinutes;
+      prevHours = currentHours;
     }, 1000);
 
     return () => clearInterval(timer);
@@ -45,10 +64,10 @@ const Clock = () => {
   const year = time.getFullYear();
   const weekday = time.toLocaleDateString('en-US', { weekday: 'long' });
 
-  // Calculate angles for clock hands
+  // Calculate angles for clock hands with accumulated rotations to prevent backwards jumping
   const secondAngle = (seconds * 6) - 90 + secondRotations; // 6 degrees per second + accumulated rotations
-  const minuteAngle = (minutes * 6) + (seconds * 0.1) - 90; // 6 degrees per minute + smooth second movement
-  const hourAngle = ((hours % 12) * 30) + (minutes * 0.5) - 90; // 30 degrees per hour + smooth minute movement
+  const minuteAngle = (minutes * 6) + (seconds * 0.1) - 90 + minuteRotations; // 6 degrees per minute + smooth second movement + accumulated rotations
+  const hourAngle = ((hours % 12) * 30) + (minutes * 0.5) - 90 + hourRotations; // 30 degrees per hour + smooth minute movement + accumulated rotations
 
   // Generate all 60 minute markers
   const minuteMarkers = Array.from({ length: 60 }, (_, i) => ({

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plane, X, MapPin } from 'lucide-react';
 import { Flight, FlightInfo } from '@/types/flight';
@@ -10,6 +11,7 @@ interface FlightAlertProps {
   flightCount: number;
   newFlights: string[];
   newFlightsWithInfo?: Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>;
+  allFlights: Flight[];
   userLocation?: {
     latitude: number;
     longitude: number;
@@ -18,7 +20,29 @@ interface FlightAlertProps {
   onDismiss: () => void;
 }
 
-const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, userLocation, onDismiss }: FlightAlertProps) => {
+const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, allFlights, userLocation, onDismiss }: FlightAlertProps) => {
+  // Preserve flight info during the alert period to prevent loss of route information
+  const [preservedFlightInfo, setPreservedFlightInfo] = useState<Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>>([]);
+  
+  // Update preserved flight info when new flights with info arrive
+  useEffect(() => {
+    if (newFlightsWithInfo && newFlightsWithInfo.length > 0) {
+      // Merge new flight info with existing preserved info, avoiding duplicates
+      setPreservedFlightInfo(prevInfo => {
+        const existingHexCodes = prevInfo.map(f => f.hexCode);
+        const newInfo = newFlightsWithInfo.filter(f => !existingHexCodes.includes(f.hexCode));
+        return [...prevInfo, ...newInfo];
+      });
+    }
+  }, [newFlightsWithInfo]);
+  
+  // Clear preserved info when alert is dismissed
+  useEffect(() => {
+    if (!isVisible) {
+      setPreservedFlightInfo([]);
+    }
+  }, [isVisible]);
+  
   if (!isVisible) return null;
 
   // Calculate rotation for the main plane icon (first new flight)
@@ -92,25 +116,31 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, u
           <Plane className="w-16 h-16 text-white mx-auto" />
         </motion.div>
 
-        {/* Directional beacons for each new flight */}
-        {userLocation && newFlightsWithInfo && newFlightsWithInfo.slice(0, 4).map((flightData, index) => {
+        {/* Real-time beacons for all current flights */}
+        {userLocation && allFlights && allFlights.slice(0, 8).map((flight, index) => {
+          // Skip flights without valid coordinates
+          if (!flight.lat || !flight.lon) return null;
+          
           const rotation = calculatePlaneRotation(
             userLocation.latitude,
             userLocation.longitude,
-            flightData.flight.lat || 0,
-            flightData.flight.lon || 0,
+            flight.lat,
+            flight.lon,
             userLocation.facingDirection
           );
           
           // Calculate position on the clock face (radius from center to edge)
-          const radius = 180; // Increased radius to reach the perimeter
+          const radius = 180;
           const angleRad = (rotation - 90) * (Math.PI / 180); // -90 to make 0° point up
           const x = Math.cos(angleRad) * radius;
           const y = Math.sin(angleRad) * radius;
           
+          // Determine if this is a new flight for highlighting
+          const isNewFlight = newFlights.includes(flight.hex);
+          
           return (
             <motion.div
-              key={flightData.hexCode}
+              key={flight.hex}
               className="absolute z-20"
               style={{
                 left: `calc(50% + ${x}px)`,
@@ -118,21 +148,34 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, u
                 transform: 'translate(-50%, -50%)'
               }}
               initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.5 + index * 0.1 }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1,
+                left: `calc(50% + ${x}px)`,
+                top: `calc(50% + ${y}px)`
+              }}
+              transition={{ 
+                delay: isNewFlight ? 0.5 + index * 0.1 : 0,
+                duration: 0.8,
+                ease: "easeOut"
+              }}
             >
               {/* Triangle beacon pointing inward */}
               <div
-                className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-yellow-400"
+                className={`w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent ${
+                  isNewFlight ? 'border-b-yellow-400' : 'border-b-blue-400'
+                }`}
                 style={{
                   transform: `rotate(${rotation + 180}deg)`, // +180 to point inward toward center
-                  filter: 'drop-shadow(0 0 4px rgba(255, 255, 0, 0.6))'
+                  filter: `drop-shadow(0 0 4px rgba(${isNewFlight ? '255, 255, 0' : '59, 130, 246'}, 0.6))`
                 }}
               />
               {/* Flight number label */}
-              {flightData.flight.flight && (
+              {flight.flight && (
                 <div 
-                  className="absolute text-xs text-yellow-300 font-semibold whitespace-nowrap"
+                  className={`absolute text-xs font-semibold whitespace-nowrap ${
+                    isNewFlight ? 'text-yellow-300' : 'text-blue-300'
+                  }`}
                   style={{
                     left: '50%',
                     top: '100%',
@@ -140,7 +183,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, u
                     textShadow: '0 0 4px rgba(0, 0, 0, 0.8)'
                   }}
                 >
-                  {flightData.flight.flight}
+                  {flight.flight}
                 </div>
               )}
             </motion.div>
@@ -158,14 +201,14 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, u
         </motion.h1>
         
         {/* Flight details */}
-        {newFlightsWithInfo && newFlightsWithInfo.length > 0 ? (
+        {preservedFlightInfo && preservedFlightInfo.length > 0 ? (
           <motion.div
             className="space-y-3 mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
           >
-            {newFlightsWithInfo.slice(0, 2).map((flightData, index) => {
+            {preservedFlightInfo.slice(0, 2).map((flightData, index) => {
               // Get relative direction description
               const relativeDirection = userLocation 
                 ? getRelativeDirection(
@@ -226,14 +269,14 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, u
               );
             })}
             
-            {newFlightsWithInfo.length > 2 && (
+            {preservedFlightInfo.length > 2 && (
               <motion.div
                 className="text-white/60 text-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}
               >
-                +{newFlightsWithInfo.length - 2} more
+                +{preservedFlightInfo.length - 2} more
               </motion.div>
             )}
           </motion.div>

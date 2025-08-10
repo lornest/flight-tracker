@@ -7,6 +7,11 @@ import FlightAlert from './FlightAlert';
 import { useFlightTracking } from '@/hooks/useFlightTracking';
 
 const FlightTrackingClock = () => {
+  const [isAlertActive, setIsAlertActive] = React.useState(false);
+  
+  // Use conditional polling: 5s when alert is active, 30s normally
+  const pollingInterval = isAlertActive ? 5000 : 30000;
+  
   const {
     flights,
     newFlights,
@@ -19,18 +24,30 @@ const FlightTrackingClock = () => {
     hasNewFlight,
     clearNewFlightAlert,
     refetch
-  } = useFlightTracking(10000); // Poll every 10 seconds
+  } = useFlightTracking(pollingInterval);
 
-  // Auto-dismiss alert after 5 seconds
+  // Manage alert state and polling frequency
   React.useEffect(() => {
     if (hasNewFlight) {
+      setIsAlertActive(true);
+      
+      // Auto-dismiss alert after 30 seconds
       const timer = setTimeout(() => {
         clearNewFlightAlert();
-      }, 5000);
+        setIsAlertActive(false);
+      }, 30000);
       
       return () => clearTimeout(timer);
+    } else {
+      setIsAlertActive(false);
     }
   }, [hasNewFlight, clearNewFlightAlert]);
+  
+  // Manual dismiss handler
+  const handleDismiss = React.useCallback(() => {
+    clearNewFlightAlert();
+    setIsAlertActive(false);
+  }, [clearNewFlightAlert]);
 
   // Log flight updates for debugging
   React.useEffect(() => {
@@ -53,8 +70,9 @@ const FlightTrackingClock = () => {
             flightCount={totalFlights}
             newFlights={newFlights}
             newFlightsWithInfo={newFlightsWithInfo}
+            allFlights={flights}
             userLocation={userLocation}
-            onDismiss={clearNewFlightAlert}
+            onDismiss={handleDismiss}
           />
         ) : (
           <Clock key="clock" />
