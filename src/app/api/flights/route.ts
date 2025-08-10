@@ -5,6 +5,7 @@ import { flightTracker } from '@/lib/utils/flight-tracker';
 const DEFAULT_LAT = parseFloat(process.env.NEXT_PUBLIC_LATITUDE || '55.978371');
 const DEFAULT_LON = parseFloat(process.env.NEXT_PUBLIC_LONGITUDE || '-3.59423');
 const DEFAULT_RADIUS = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
+const USER_FACING_DIRECTION = process.env.NEXT_PUBLIC_FACING_DIRECTION || 'N';
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,7 +41,12 @@ export async function GET(request: NextRequest) {
       newFlightsWithInfo: newFlightsWithInfo,
       total: validFlights.length,
       timestamp: Date.now(),
-      lastUpdate: flightTracker.getLastUpdate()
+      lastUpdate: flightTracker.getLastUpdate(),
+      userLocation: {
+        latitude: lat,
+        longitude: lon,
+        facingDirection: USER_FACING_DIRECTION
+      }
     });
     
   } catch (error) {

@@ -1,3 +1,5 @@
+import { Flight, ADSBResponse } from '@/types/flight';
+
 export async function fetchFlightsInRadius(
   latitude: number = 55.979636, 
   longitude: number = -3.577456, 

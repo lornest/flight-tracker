@@ -13,6 +13,7 @@ const FlightTrackingClock = () => {
     newFlightsWithInfo,
     totalFlights,
     lastUpdate,
+    userLocation,
     isLoading,
     error,
     hasNewFlight,
@@ -52,6 +53,7 @@ const FlightTrackingClock = () => {
             flightCount={totalFlights}
             newFlights={newFlights}
             newFlightsWithInfo={newFlightsWithInfo}
+            userLocation={userLocation}
             onDismiss={clearNewFlightAlert}
           />
         ) : (

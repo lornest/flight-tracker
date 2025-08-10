@@ -10,6 +10,11 @@ interface FlightData {
   total: number;
   timestamp: number;
   lastUpdate: number;
+  userLocation?: {
+    latitude: number;
+    longitude: number;
+    facingDirection: string;
+  };
   error?: string;
 }
 
@@ -70,6 +75,7 @@ export function useFlightTracking(intervalMs: number = 10000) {
     newFlightsWithInfo: flightData.newFlightsWithInfo || [],
     totalFlights: flightData.total,
     lastUpdate: flightData.lastUpdate,
+    userLocation: flightData.userLocation,
     isLoading,
     error,
     hasNewFlight,
