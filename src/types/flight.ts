@@ -42,8 +42,8 @@ export interface Flight {
     sda?: number;         // System Design Assurance
     alert?: number;       // Alert flag
     spi?: number;         // Special Position Identification
-    mlat?: any[];         // Multilateration data
-    tisb?: any[];         // TIS-B data
+    mlat?: unknown[];     // Multilateration data
+    tisb?: unknown[];     // TIS-B data
     messages?: number;    // Number of messages received
     seen?: number;        // Time since last message
     rssi?: number;        // Signal strength
