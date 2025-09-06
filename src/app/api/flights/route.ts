@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const lat = parseFloat(searchParams.get('lat') || DEFAULT_LAT.toString());
     const lon = parseFloat(searchParams.get('lon') || DEFAULT_LON.toString());
     const radius = parseFloat(searchParams.get('radius') || DEFAULT_RADIUS.toString());
+    const facing = searchParams.get('facing') || USER_FACING_DIRECTION;
 
     // Fetch flights
     const adsbData = await fetchFlightsInRadius(lat, lon, radius);
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
       userLocation: {
         latitude: lat,
         longitude: lon,
-        facingDirection: USER_FACING_DIRECTION
+        facingDirection: facing
       }
     });
     

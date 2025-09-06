@@ -6,7 +6,16 @@ import FlightTrackingClock from './FlightTrackingClock';
 import FlightRadar from './FlightRadar';
 import { useFlightTracking } from '@/hooks/useFlightTracking';
 
-const SwipeableScreens = () => {
+interface SwipeableScreensProps {
+  userConfig: {
+    latitude: number;
+    longitude: number;
+    facingDirection: string;
+  };
+  onSettingsAccess: () => void;
+}
+
+const SwipeableScreens = ({ userConfig, onSettingsAccess }: SwipeableScreensProps) => {
   const [currentScreen, setCurrentScreen] = useState(0); // 0 = Clock, 1 = Radar
   const [isAlertActive, setIsAlertActive] = useState(false);
   const [isRadarLoading, setIsRadarLoading] = useState(false);
@@ -15,6 +24,10 @@ const SwipeableScreens = () => {
   // Touch zones for screen navigation
   const containerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  
+  // Settings access via long press
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showSettingsHint, setShowSettingsHint] = useState(false);
   
   // Add delay when switching screens to prevent API rate limiting
   useEffect(() => {
@@ -69,7 +82,8 @@ const SwipeableScreens = () => {
   
   const flightData = useFlightTracking(
     isAnyLoading ? 60000 : getPollingInterval(), // Use very slow interval when loading
-    isAnyLoading // Disable API completely when loading
+    isAnyLoading, // Disable API completely when loading
+    userConfig // Pass user configuration to hook
   );
 
 
@@ -119,6 +133,36 @@ const SwipeableScreens = () => {
       }
     }
   };
+
+  // Long press handlers for settings access
+  const handleLongPressStart = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    setShowSettingsHint(true);
+    
+    const timer = setTimeout(() => {
+      onSettingsAccess();
+      setShowSettingsHint(false);
+    }, 2000); // 2 second long press
+    
+    setLongPressTimer(timer);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    setShowSettingsHint(false);
+  };
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+      }
+    };
+  }, [longPressTimer]);
 
   return (
     <div 
@@ -171,6 +215,28 @@ const SwipeableScreens = () => {
           )}
         </div>
       </motion.div>
+      
+      {/* Settings Access Overlay */}
+      <div 
+        className="absolute top-1/2 left-1/2 w-8 h-8 -translate-x-1/2 -translate-y-1/2 z-30"
+        onTouchStart={handleLongPressStart}
+        onTouchEnd={handleLongPressEnd}
+        onMouseDown={handleLongPressStart}
+        onMouseUp={handleLongPressEnd}
+        onMouseLeave={handleLongPressEnd}
+      >
+        {/* Invisible touch target for settings access */}
+        <div className="w-full h-full"></div>
+      </div>
+
+      {/* Settings Hint */}
+      {showSettingsHint && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none">
+          <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm font-semibold">
+            Hold for Settings
+          </div>
+        </div>
+      )}
       
     </div>
   );

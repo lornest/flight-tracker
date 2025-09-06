@@ -24,12 +24,23 @@ interface FlightRadarProps {
 const FlightRadar = ({ flightData }: FlightRadarProps) => {
   const {
     flights,
+    newFlightsWithInfo,
     userLocation,
     isLoading,
     error
   } = flightData;
 
+  // Debug: Check if userLocation is available
+  if (process.env.NODE_ENV === 'development') {
+    console.log('FlightRadar userLocation:', userLocation);
+  }
+
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
+
+  // Helper function to get flight info for a specific flight
+  const getFlightInfo = (flight: Flight) => {
+    return newFlightsWithInfo.find(info => info.hexCode === flight.hex)?.info;
+  };
 
   // Only show error for actual connection/API errors, not "no flights" scenarios
   if (error && !error.toLowerCase().includes('no flight') && !error.toLowerCase().includes('no aircraft')) {
@@ -83,8 +94,26 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
         {/* Center dot */}
         <div className="absolute w-2 h-2 bg-white rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"></div>
         
+        {/* Facing direction indicator */}
+        {userLocation && (
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-blue-600/80 backdrop-blur-sm rounded-lg px-4 py-2 text-white text-sm font-bold border border-white/20">
+              ↑ {userLocation.facingDirection}
+            </div>
+          </div>
+        )}
+        
+        {/* Debug indicator - always show */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-red-600/80 backdrop-blur-sm rounded-lg px-4 py-2 text-white text-xs">
+              Debug: {userLocation ? `Facing ${userLocation.facingDirection}` : 'No userLocation'}
+            </div>
+          </div>
+        )}
+        
         {/* Flight beacons */}
-        {userLocation && flights && flights.map((flight, index) => {
+        {userLocation && flights && flights.map((flight) => {
           // Skip flights without valid coordinates
           if (!flight.lat || !flight.lon) return null;
           
@@ -118,9 +147,16 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           const distanceRatio = Math.min(distanceNM / maxRadiusNM, 1); // Cap at 1.0 for aircraft beyond our radius
           const screenRadius = distanceRatio * maxScreenRadius;
           
-          const angleRad = (rotation - 90) * (Math.PI / 180); // -90 to make 0° point up
+          // Use rotation directly - it's already relative to user's facing direction
+          // 0° = straight ahead (up on screen), 90° = right, 180° = behind, 270° = left
+          const angleRad = (rotation - 90) * (Math.PI / 180); // -90 to convert to screen coordinates
           const x = Math.cos(angleRad) * screenRadius;
           const y = Math.sin(angleRad) * screenRadius;
+          
+          // Debug logging to verify facing direction is working
+          if (process.env.NODE_ENV === 'development' && flight.flight) {
+            console.log(`Flight ${flight.flight}: facing=${userLocation.facingDirection}, rotation=${rotation.toFixed(1)}°, screenPos=(${x.toFixed(0)}, ${y.toFixed(0)})`);
+          }
           
           return (
             <motion.div
@@ -244,6 +280,36 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                     <span className="text-white">{selectedFlight.r}</span>
                   </div>
                 )}
+
+                {/* Route Information */}
+                {(() => {
+                  const flightInfo = getFlightInfo(selectedFlight);
+                  if (flightInfo?.origin && flightInfo?.destination) {
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Route:</span>
+                          <span className="text-white font-mono">
+                            {flightInfo.origin.iata || flightInfo.origin.icao} → {flightInfo.destination.iata || flightInfo.destination.icao}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Origin:</span>
+                          <span className="text-white text-xs">
+                            {flightInfo.origin.airport}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Destination:</span>
+                          <span className="text-white text-xs">
+                            {flightInfo.destination.airport}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
 
                 {/* Position Info */}
                 <div className="flex justify-between">

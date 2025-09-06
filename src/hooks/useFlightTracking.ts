@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Flight, FlightInfo } from '@/types/flight';
 
 interface FlightData {
@@ -18,7 +18,13 @@ interface FlightData {
   error?: string;
 }
 
-export function useFlightTracking(intervalMs: number = 10000, disabled: boolean = false) {
+interface UserConfig {
+  latitude: number;
+  longitude: number;
+  facingDirection: string;
+}
+
+export function useFlightTracking(intervalMs: number = 10000, disabled: boolean = false, userConfig?: UserConfig) {
   const [flightData, setFlightData] = useState<FlightData>({
     flights: [],
     newFlights: [],
@@ -29,13 +35,37 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasNewFlight, setHasNewFlight] = useState(false);
+  
+  // Use ref to always have latest config without causing effect recreation
+  const configRef = useRef(userConfig);
+  const isFetchingRef = useRef(false);
+  
+  // Update ref when userConfig changes
+  useEffect(() => {
+    configRef.current = userConfig;
+  }, [userConfig]);
 
   const fetchFlights = useCallback(async () => {
+    // Prevent overlapping requests
+    if (isFetchingRef.current) {
+      console.log('Fetch already in progress, skipping');
+      return;
+    }
+    
+    isFetchingRef.current = true;
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await fetch('/api/flights');
+      // Build query params with user config if available
+      const params = new URLSearchParams();
+      const config = configRef.current;
+      if (config?.latitude) params.set('lat', config.latitude.toString());
+      if (config?.longitude) params.set('lon', config.longitude.toString());
+      if (config?.facingDirection) params.set('facing', config.facingDirection);
+      
+      const url = `/api/flights${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
       const data: FlightData = await response.json();
       
       if (data.error) {
@@ -53,8 +83,9 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
       setError(err instanceof Error ? err.message : 'Failed to fetch flights');
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, []);
+  }, []); // No dependencies needed since we use configRef
 
   // Clear new flight notification
   const clearNewFlightAlert = useCallback(() => {
@@ -68,12 +99,20 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
       return;
     }
     
-    console.log('Flight tracking enabled, starting fetch');
-    fetchFlights(); // Initial fetch
+    console.log('Flight tracking enabled, starting fetch with interval:', intervalMs);
+    
+    // Initial fetch with a small delay to avoid rapid-fire requests
+    const initialTimeout = setTimeout(() => {
+      fetchFlights();
+    }, 500);
     
     const interval = setInterval(fetchFlights, intervalMs);
-    return () => clearInterval(interval);
-  }, [fetchFlights, intervalMs, disabled]);
+    
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [intervalMs, disabled]); // Removed fetchFlights from deps to prevent recreation loops
 
   return {
     flights: flightData.flights,
