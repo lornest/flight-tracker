@@ -41,11 +41,17 @@ const SwipeableScreens = () => {
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
     
-    // Determine swipe direction and threshold
-    const swipeThreshold = 100;
+    // Calculate screen width (480px for your Pi Zero 2W)
+    const screenWidth = 480;
+    const swipeThreshold = screenWidth * 0.1; // 10% of screen width
     const swipeVelocityThreshold = 500;
     
-    if (Math.abs(info.offset.x) > swipeThreshold || Math.abs(info.velocity.x) > swipeVelocityThreshold) {
+    // Determine if we should switch screens based on drag distance or velocity
+    const shouldSwitchScreens = 
+      Math.abs(info.offset.x) > swipeThreshold || 
+      Math.abs(info.velocity.x) > swipeVelocityThreshold;
+    
+    if (shouldSwitchScreens) {
       if (info.offset.x > 0 && currentScreen === 1) {
         // Swipe right: Radar → Clock
         setCurrentScreen(0);
@@ -54,6 +60,8 @@ const SwipeableScreens = () => {
         setCurrentScreen(1);
       }
     }
+    // If threshold not met, screen will automatically snap back to current position
+    // due to the animate prop forcing the correct position
   };
 
   const handleDragStart = () => {
@@ -65,10 +73,17 @@ const SwipeableScreens = () => {
       <motion.div
         className="flex w-[200vw] h-full swipe-container"
         animate={{ x: currentScreen === 0 ? 0 : '-50%' }}
-        transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+        transition={{ 
+          type: "tween", 
+          duration: 0.3, 
+          ease: "easeOut",
+          // Force completion - don't allow partial states
+          when: "afterChildren"
+        }}
         drag="x"
-        dragConstraints={{ left: -1000, right: 0 }}
-        dragElastic={0.1}
+        dragConstraints={{ left: -480, right: 480 }} // Limit to one screen width
+        dragElastic={0.15}
+        dragMomentum={false} // Disable momentum for precise control
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         style={{ cursor: isDragging ? 'grabbing' : 'grab' }}

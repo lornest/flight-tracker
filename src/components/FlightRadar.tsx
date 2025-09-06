@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Flight, FlightInfo } from '@/types/flight';
 import { calculatePlaneRotation, calculateDistance } from '@/lib/utils/bearing';
@@ -28,6 +28,8 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
     isLoading,
     error
   } = flightData;
+
+  const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
 
   // Only show error for actual connection/API errors, not "no flights" scenarios
   if (error && !error.toLowerCase().includes('no flight') && !error.toLowerCase().includes('no aircraft')) {
@@ -119,7 +121,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           return (
             <motion.div
               key={flight.hex}
-              className="absolute z-20 radar-beacon"
+              className="absolute z-20 radar-beacon cursor-pointer hover:scale-110 transition-transform"
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
@@ -136,6 +138,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                 duration: 0.4,
                 ease: "easeOut"
               }}
+              onClick={() => setSelectedFlight(flight)}
             >
               {/* White triangle beacon pointing inward */}
               <div
@@ -180,6 +183,121 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
               Clear skies
             </div>
           </div>
+        )}
+
+        {/* Flight Info Modal */}
+        {selectedFlight && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedFlight(null)}
+          >
+            <motion.div
+              className="bg-black/90 backdrop-blur-sm rounded-lg p-6 max-w-sm w-full mx-4 border border-white/20"
+              initial={{ scale: 0.8, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 50 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-white text-lg font-semibold">
+                  {selectedFlight.flight || selectedFlight.hex}
+                </h3>
+                <button
+                  onClick={() => setSelectedFlight(null)}
+                  className="text-white/60 hover:text-white text-xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Flight Details */}
+              <div className="space-y-3 text-sm">
+                {/* Aircraft Info */}
+                {selectedFlight.t && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Aircraft:</span>
+                    <span className="text-white">{selectedFlight.t}</span>
+                  </div>
+                )}
+                
+                {selectedFlight.r && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Registration:</span>
+                    <span className="text-white">{selectedFlight.r}</span>
+                  </div>
+                )}
+
+                {/* Position Info */}
+                <div className="flex justify-between">
+                  <span className="text-white/70">Position:</span>
+                  <span className="text-white text-xs font-mono">
+                    {selectedFlight.lat.toFixed(4)}°, {selectedFlight.lon.toFixed(4)}°
+                  </span>
+                </div>
+
+                {/* Altitude */}
+                {selectedFlight.alt_baro && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Altitude:</span>
+                    <span className="text-white">{selectedFlight.alt_baro.toLocaleString()} ft</span>
+                  </div>
+                )}
+
+                {/* Speed */}
+                {selectedFlight.gs && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Speed:</span>
+                    <span className="text-white">{selectedFlight.gs} kts</span>
+                  </div>
+                )}
+
+                {/* Heading */}
+                {selectedFlight.track && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Heading:</span>
+                    <span className="text-white">{selectedFlight.track}°</span>
+                  </div>
+                )}
+
+                {/* Squawk */}
+                {selectedFlight.squawk && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Squawk:</span>
+                    <span className="text-white font-mono">{selectedFlight.squawk}</span>
+                  </div>
+                )}
+
+                {/* Distance from user */}
+                {userLocation && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Distance:</span>
+                    <span className="text-white">
+                      {calculateDistance(
+                        userLocation.latitude,
+                        userLocation.longitude,
+                        selectedFlight.lat,
+                        selectedFlight.lon
+                      ).toFixed(1)} nm
+                    </span>
+                  </div>
+                )}
+
+                {/* Vertical Speed */}
+                {selectedFlight.baro_rate && (
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Vertical Speed:</span>
+                    <span className="text-white">
+                      {selectedFlight.baro_rate > 0 ? '↗' : selectedFlight.baro_rate < 0 ? '↘' : '→'} {Math.abs(selectedFlight.baro_rate)} ft/min
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </div>
