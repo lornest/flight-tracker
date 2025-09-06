@@ -8,7 +8,6 @@ import { useFlightTracking } from '@/hooks/useFlightTracking';
 
 const SwipeableScreens = () => {
   const [currentScreen, setCurrentScreen] = useState(0); // 0 = Clock, 1 = Radar
-  const [isDragging, setIsDragging] = useState(false);
   const [isAlertActive, setIsAlertActive] = useState(false);
   const [isRadarLoading, setIsRadarLoading] = useState(false);
   
@@ -42,35 +41,6 @@ const SwipeableScreens = () => {
   // Single shared flight tracking instance (disabled during radar loading)
   const flightData = useFlightTracking(getPollingInterval(), isRadarLoading);
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false);
-    
-    // Calculate screen width (480px for your Pi Zero 2W)
-    const screenWidth = 480;
-    const swipeThreshold = screenWidth * 0.1; // 10% of screen width
-    const swipeVelocityThreshold = 500;
-    
-    // Determine if we should switch screens based on drag distance or velocity
-    const shouldSwitchScreens = 
-      Math.abs(info.offset.x) > swipeThreshold || 
-      Math.abs(info.velocity.x) > swipeVelocityThreshold;
-    
-    if (shouldSwitchScreens) {
-      if (info.offset.x > 0 && currentScreen === 1) {
-        // Swipe right: Radar → Clock
-        setCurrentScreen(0);
-      } else if (info.offset.x < 0 && currentScreen === 0) {
-        // Swipe left: Clock → Radar
-        setCurrentScreen(1);
-      }
-    }
-    // If threshold not met, screen will automatically snap back to current position
-    // due to the animate prop forcing the correct position
-  };
-
-  const handleDragStart = () => {
-    setIsDragging(true);
-  };
 
   // Native touch handlers for Linux compatibility
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -153,7 +123,7 @@ const SwipeableScreens = () => {
   return (
     <div 
       ref={containerRef}
-      className="w-screen h-screen overflow-hidden relative"
+      className="w-full h-full overflow-hidden relative"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
@@ -161,25 +131,17 @@ const SwipeableScreens = () => {
       style={{ touchAction: 'pan-x' }} // Allow horizontal pan, prevent vertical scroll
     >
       <motion.div
-        className="flex w-[200vw] h-full swipe-container"
-        animate={{ x: currentScreen === 0 ? 0 : '-50%' }}
+        className="flex h-full swipe-container"
+        style={{ width: '200vw', cursor: 'default' }}
+        animate={{ x: currentScreen === 0 ? '0vw' : '-100vw' }}
         transition={{ 
           type: "tween", 
           duration: 0.3, 
-          ease: "easeOut",
-          // Force completion - don't allow partial states
-          when: "afterChildren"
+          ease: "easeOut"
         }}
-        drag="x"
-        dragConstraints={{ left: -480, right: 480 }} // Limit to one screen width
-        dragElastic={0.15}
-        dragMomentum={false} // Disable momentum for precise control
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
       >
         {/* Screen 1: Flight Tracking Clock */}
-        <div className="w-screen h-screen flex-shrink-0">
+        <div className="h-full flex-shrink-0" style={{ width: '100vw' }}>
           <FlightTrackingClock 
             sharedFlightData={flightData}
             isAlertActive={isAlertActive}
@@ -188,9 +150,9 @@ const SwipeableScreens = () => {
         </div>
         
         {/* Screen 2: Flight Radar */}
-        <div className="w-screen h-screen flex-shrink-0">
+        <div className="h-full flex-shrink-0" style={{ width: '100vw' }}>
           {isRadarLoading ? (
-            <div className="w-screen h-screen bg-black flex items-center justify-center">
+            <div className="w-full h-full bg-black flex items-center justify-center">
               <div className="text-center">
                 <div className="w-round h-round rounded-round border-2 border-white/20 relative mx-auto mb-4 flex items-center justify-center">
                   <div className="text-white/60 text-sm">Loading radar...</div>

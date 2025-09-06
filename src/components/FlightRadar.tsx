@@ -34,7 +34,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
   // Only show error for actual connection/API errors, not "no flights" scenarios
   if (error && !error.toLowerCase().includes('no flight') && !error.toLowerCase().includes('no aircraft')) {
     return (
-      <div className="w-screen h-screen bg-black flex items-center justify-center">
+      <div className="w-full h-full bg-black flex items-center justify-center">
         <div className="text-red-400 text-center">
           <div className="text-xl mb-2">Connection Error</div>
           <div className="text-sm">{error}</div>
@@ -44,7 +44,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
   }
 
   return (
-    <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden relative">
+    <div className="w-full h-full bg-black flex items-center justify-center overflow-hidden relative">
       {/* Radar circle */}
       <div className="w-round h-round rounded-round border-2 border-white/20 relative">
         {/* Distance rings */}
