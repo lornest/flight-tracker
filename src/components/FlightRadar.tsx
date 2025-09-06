@@ -195,7 +195,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
             onClick={() => setSelectedFlight(null)}
           >
             <motion.div
-              className="bg-black/90 backdrop-blur-sm rounded-lg p-6 max-w-sm w-full mx-4 border border-white/20"
+              className="bg-black/95 backdrop-blur-md rounded-lg p-6 max-w-sm w-full mx-4 border border-white/40"
               initial={{ scale: 0.8, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 50 }}
