@@ -88,14 +88,6 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           // Skip flights without valid coordinates
           if (!flight.lat || !flight.lon) return null;
           
-          const rotation = calculatePlaneRotation(
-            userLocation.latitude,
-            userLocation.longitude,
-            flight.lat,
-            flight.lon,
-            userLocation.facingDirection
-          );
-          
           // Calculate distance from user location to aircraft
           const distanceNM = calculateDistance(
             userLocation.latitude,
@@ -106,6 +98,17 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           
           // Get the maximum radius from environment variable (default 10 NM)
           const maxRadiusNM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
+          
+          // Skip flights that are beyond our radar range
+          if (distanceNM > maxRadiusNM) return null;
+          
+          const rotation = calculatePlaneRotation(
+            userLocation.latitude,
+            userLocation.longitude,
+            flight.lat,
+            flight.lon,
+            userLocation.facingDirection
+          );
           
           // Calculate position on the radar circle based on actual distance
           // If aircraft is at center (0 distance), beacon is at center
@@ -138,7 +141,10 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                 duration: 0.4,
                 ease: "easeOut"
               }}
-              onClick={() => setSelectedFlight(flight)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedFlight(flight);
+              }}
             >
               {/* White triangle beacon pointing inward */}
               <div
@@ -188,11 +194,15 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
         {/* Flight Info Modal */}
         {selectedFlight && (
           <motion.div
+            data-flight-modal="true"
             className="absolute inset-0 flex items-center justify-center z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedFlight(null)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedFlight(null);
+            }}
           >
             <motion.div
               className="bg-black/95 backdrop-blur-md rounded-lg p-6 max-w-sm w-full mx-4 border border-white/40"
@@ -207,7 +217,10 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                   {selectedFlight.flight || selectedFlight.hex}
                 </h3>
                 <button
-                  onClick={() => setSelectedFlight(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedFlight(null);
+                  }}
                   className="text-white/60 hover:text-white text-xl"
                 >
                   ×

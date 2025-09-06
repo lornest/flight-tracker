@@ -63,8 +63,12 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
 
   // Auto-fetch flights at specified interval (only when not disabled)
   useEffect(() => {
-    if (disabled) return;
+    if (disabled) {
+      console.log('Flight tracking disabled, skipping fetch');
+      return;
+    }
     
+    console.log('Flight tracking enabled, starting fetch');
     fetchFlights(); // Initial fetch
     
     const interval = setInterval(fetchFlights, intervalMs);

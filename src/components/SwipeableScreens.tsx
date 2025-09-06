@@ -60,11 +60,32 @@ const SwipeableScreens = () => {
   }, [currentScreen, isAlertActive, isRadarLoading, isClockLoading]);
   
   // Single shared flight tracking instance (disabled during any loading)
-  const flightData = useFlightTracking(getPollingInterval(), isRadarLoading || isClockLoading);
+  const isAnyLoading = isRadarLoading || isClockLoading;
+  
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Screen state:', { currentScreen, isRadarLoading, isClockLoading, isAnyLoading });
+  }
+  
+  const flightData = useFlightTracking(
+    isAnyLoading ? 60000 : getPollingInterval(), // Use very slow interval when loading
+    isAnyLoading // Disable API completely when loading
+  );
 
 
   // Simple touch zone handlers
   const handleTouchZone = (e: React.MouseEvent | React.TouchEvent) => {
+    // Check if the clicked element is a flight beacon or modal element
+    const target = e.target as HTMLElement;
+    
+    // Don't navigate if clicking on interactive elements
+    if (target.closest('.radar-beacon') || 
+        target.closest('[data-flight-modal]') || 
+        target.closest('button') ||
+        target.classList.contains('cursor-pointer')) {
+      return;
+    }
+    
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     
