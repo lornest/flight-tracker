@@ -58,18 +58,18 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
 
   return (
     <motion.div
-      className="w-round h-round rounded-round bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex flex-col items-center justify-center overflow-hidden relative shadow-2xl"
+      className="w-round h-round rounded-round bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex flex-col items-center justify-center overflow-hidden relative shadow-2xl alert-container"
       initial={{ scale: 0, rotate: -180 }}
       animate={{ scale: 1, rotate: 0 }}
       exit={{ scale: 0, rotate: 180 }}
-      transition={{ type: "spring", damping: 20, stiffness: 200 }}
+      transition={{ type: "tween", duration: 0.4, ease: "easeOut" }}
     >
       {/* Animated background pattern */}
       <div className="absolute inset-0 opacity-10">
         <motion.div
           className="absolute inset-0"
           animate={{ rotate: 360 }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
         >
           {Array.from({ length: 8 }).map((_, i) => (
             <div
@@ -108,7 +108,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
             rotate: [0, 5, 0, -5, 0]
           }}
           transition={{ 
-            duration: 3, 
+            duration: 4, 
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
@@ -143,11 +143,14 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
               key={flight.hex}
               className="absolute z-20"
               style={{
-                left: `calc(50% + ${x}px)`,
-                top: `calc(50% + ${y}px)`,
                 transform: 'translate(-50%, -50%)'
               }}
-              initial={{ scale: 0, opacity: 0 }}
+              initial={{ 
+                scale: 0, 
+                opacity: 0,
+                left: '50%',
+                top: '50%'
+              }}
               animate={{ 
                 scale: 1, 
                 opacity: 1,
@@ -155,27 +158,23 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
                 top: `calc(50% + ${y}px)`
               }}
               transition={{ 
-                delay: isNewFlight ? 0.5 + index * 0.1 : 0,
-                duration: 0.8,
+                delay: isNewFlight ? 0.3 + index * 0.05 : 0,
+                duration: 0.4,
                 ease: "easeOut"
               }}
             >
               {/* Triangle beacon pointing inward */}
               <div
-                className={`w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent ${
-                  isNewFlight ? 'border-b-yellow-400' : 'border-b-blue-400'
-                }`}
+                className="w-0 h-0 border-l-[10px] border-r-[10px] border-b-[14px] border-l-transparent border-r-transparent border-b-yellow-300"
                 style={{
                   transform: `rotate(${rotation + 180}deg)`, // +180 to point inward toward center
-                  filter: `drop-shadow(0 0 4px rgba(${isNewFlight ? '255, 255, 0' : '59, 130, 246'}, 0.6))`
+                  filter: 'drop-shadow(0 0 6px rgba(255, 255, 0, 0.8))'
                 }}
               />
               {/* Flight number label */}
               {flight.flight && (
                 <div 
-                  className={`absolute text-xs font-semibold whitespace-nowrap ${
-                    isNewFlight ? 'text-yellow-300' : 'text-blue-300'
-                  }`}
+                  className="absolute text-xs font-semibold whitespace-nowrap text-yellow-300"
                   style={{
                     left: '50%',
                     top: '100%',
@@ -313,7 +312,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
           opacity: [0.2, 0.5, 0.2]
         }}
         transition={{ 
-          duration: 2, 
+          duration: 3, 
           repeat: Infinity, 
           ease: "easeInOut" 
         }}

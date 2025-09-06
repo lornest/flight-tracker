@@ -118,7 +118,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           return (
             <motion.div
               key={flight.hex}
-              className="absolute z-20"
+              className="absolute z-20 radar-beacon"
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
@@ -132,7 +132,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                 top: `calc(50% + ${y}px)`
               }}
               transition={{ 
-                duration: 0.8,
+                duration: 0.4,
                 ease: "easeOut"
               }}
             >

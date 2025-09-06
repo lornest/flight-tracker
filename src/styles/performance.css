@@ -1,0 +1,74 @@
+/* Performance optimizations for Pi Zero 2W */
+
+/* Force hardware acceleration only for essential elements */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-auto {
+  will-change: auto;
+}
+
+/* Optimize clock hands for better performance */
+.clock-hand {
+  will-change: transform;
+  transform-origin: 50% 100%;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize swipe animations */
+.swipe-container {
+  will-change: transform;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+/* Reduce animation complexity on radar elements */
+.radar-beacon {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Optimize alert animations */
+.alert-container {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Performance tweaks for low-power devices */
+@media (max-width: 768px) and (max-height: 768px) {
+  /* Reduce complexity on small circular displays */
+  * {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Disable expensive filters on low-power devices, except for yellow beacons */
+  .drop-shadow:not(.border-b-yellow-300):not(.border-b-yellow-400) {
+    filter: none;
+  }
+  
+  /* Simplify backdrop blur effects */
+  .backdrop-blur-sm {
+    backdrop-filter: none;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Smooth scrolling optimizations */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Battery saving mode - reduce animations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

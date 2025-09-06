@@ -50,9 +50,9 @@ const SwipeableScreens = () => {
   return (
     <div className="w-screen h-screen overflow-hidden relative">
       <motion.div
-        className="flex w-[200vw] h-full"
+        className="flex w-[200vw] h-full swipe-container"
         animate={{ x: currentScreen === 0 ? 0 : '-50%' }}
-        transition={{ type: "spring", damping: 30, stiffness: 300 }}
+        transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
         drag="x"
         dragConstraints={{ left: -1000, right: 0 }}
         dragElastic={0.1}

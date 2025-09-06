@@ -101,7 +101,7 @@ const Clock = () => {
       <div className="absolute inset-0 rounded-full">
         {/* Hour hand */}
         <motion.div
-          className="absolute w-1.5 bg-white origin-bottom"
+          className="absolute w-1.5 bg-white origin-bottom clock-hand"
           style={{
             height: '120px',
             top: '120px',
@@ -110,12 +110,12 @@ const Clock = () => {
             transformOrigin: '50% 120px'
           }}
           animate={{ rotate: hourAngle + 90 }}
-          transition={{ type: "spring", damping: 50, stiffness: 100 }}
+          transition={{ type: "tween", duration: 0.5, ease: "easeOut" }}
         />
         
         {/* Minute hand */}
         <motion.div
-          className="absolute w-1 bg-white origin-bottom"
+          className="absolute w-1 bg-white origin-bottom clock-hand"
           style={{
             height: '160px',
             top: '80px',
@@ -124,12 +124,12 @@ const Clock = () => {
             transformOrigin: '50% 160px'
           }}
           animate={{ rotate: minuteAngle + 90 }}
-          transition={{ type: "spring", damping: 50, stiffness: 100 }}
+          transition={{ type: "tween", duration: 0.5, ease: "easeOut" }}
         />
         
         {/* Second hand */}
         <motion.div
-          className="absolute w-px bg-white origin-bottom"
+          className="absolute w-px bg-white origin-bottom clock-hand"
           style={{
             height: '180px',
             top: '60px',
@@ -138,7 +138,7 @@ const Clock = () => {
             transformOrigin: '50% 180px'
           }}
           animate={{ rotate: secondAngle + 90 }}
-          transition={{ type: "spring", damping: 30, stiffness: 200 }}
+          transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
         />
       </div>
 
