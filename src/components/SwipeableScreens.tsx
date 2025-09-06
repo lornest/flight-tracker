@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, PanInfo } from 'framer-motion';
 import FlightTrackingClock from './FlightTrackingClock';
 import FlightRadar from './FlightRadar';
@@ -10,20 +10,33 @@ const SwipeableScreens = () => {
   const [currentScreen, setCurrentScreen] = useState(0); // 0 = Clock, 1 = Radar
   const [isDragging, setIsDragging] = useState(false);
   const [isAlertActive, setIsAlertActive] = useState(false);
+  const [isRadarLoading, setIsRadarLoading] = useState(false);
   
+  // Add delay when switching to radar to prevent API rate limiting
+  useEffect(() => {
+    if (currentScreen === 1) {
+      setIsRadarLoading(true);
+      const timer = setTimeout(() => {
+        setIsRadarLoading(false);
+      }, 1500); // 1.5 second delay
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentScreen]);
+
   // Determine polling interval based on screen and alert state
   const getPollingInterval = useCallback(() => {
-    if (currentScreen === 0) {
-      // Clock screen: conditional polling based on alert state
+    if (currentScreen === 0 || isRadarLoading) {
+      // Clock screen or radar loading: conditional polling based on alert state
       return isAlertActive ? 5000 : 30000;
     } else {
       // Radar screen: continuous 5s polling
       return 5000;
     }
-  }, [currentScreen, isAlertActive]);
+  }, [currentScreen, isAlertActive, isRadarLoading]);
   
-  // Single shared flight tracking instance
-  const flightData = useFlightTracking(getPollingInterval());
+  // Single shared flight tracking instance (disabled during radar loading)
+  const flightData = useFlightTracking(getPollingInterval(), isRadarLoading);
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
@@ -71,23 +84,20 @@ const SwipeableScreens = () => {
         
         {/* Screen 2: Flight Radar */}
         <div className="w-screen h-screen flex-shrink-0">
-          <FlightRadar flightData={flightData} />
+          {isRadarLoading ? (
+            <div className="w-screen h-screen bg-black flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-round h-round rounded-round border-2 border-white/20 relative mx-auto mb-4 flex items-center justify-center">
+                  <div className="text-white/60 text-sm">Loading radar...</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <FlightRadar flightData={flightData} />
+          )}
         </div>
       </motion.div>
       
-      {/* Screen indicator dots */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-50">
-        <div 
-          className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-            currentScreen === 0 ? 'bg-white' : 'bg-white/30'
-          }`}
-        />
-        <div 
-          className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-            currentScreen === 1 ? 'bg-white' : 'bg-white/30'
-          }`}
-        />
-      </div>
     </div>
   );
 };

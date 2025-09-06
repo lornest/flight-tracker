@@ -18,7 +18,7 @@ interface FlightData {
   error?: string;
 }
 
-export function useFlightTracking(intervalMs: number = 10000) {
+export function useFlightTracking(intervalMs: number = 10000, disabled: boolean = false) {
   const [flightData, setFlightData] = useState<FlightData>({
     flights: [],
     newFlights: [],
@@ -61,13 +61,15 @@ export function useFlightTracking(intervalMs: number = 10000) {
     setHasNewFlight(false);
   }, []);
 
-  // Auto-fetch flights at specified interval
+  // Auto-fetch flights at specified interval (only when not disabled)
   useEffect(() => {
+    if (disabled) return;
+    
     fetchFlights(); // Initial fetch
     
     const interval = setInterval(fetchFlights, intervalMs);
     return () => clearInterval(interval);
-  }, [fetchFlights, intervalMs]);
+  }, [fetchFlights, intervalMs, disabled]);
 
   return {
     flights: flightData.flights,
