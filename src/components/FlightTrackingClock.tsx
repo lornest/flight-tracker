@@ -24,7 +24,7 @@ interface FlightTrackingClockProps {
   setIsAlertActive: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const FlightTrackingClock = ({ sharedFlightData, isAlertActive, setIsAlertActive }: FlightTrackingClockProps) => {
+const FlightTrackingClock = ({ sharedFlightData, setIsAlertActive }: FlightTrackingClockProps) => {
   const {
     flights,
     newFlights,
