@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { motion, PanInfo } from 'framer-motion';
+import { motion } from 'framer-motion';
 import FlightTrackingClock from './FlightTrackingClock';
 import FlightRadar from './FlightRadar';
 import { useFlightTracking } from '@/hooks/useFlightTracking';
@@ -11,8 +11,7 @@ const SwipeableScreens = () => {
   const [isAlertActive, setIsAlertActive] = useState(false);
   const [isRadarLoading, setIsRadarLoading] = useState(false);
   
-  // Touch handling for Linux touch drivers
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  // Touch zones for screen navigation
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Add delay when switching to radar to prevent API rate limiting
@@ -42,93 +41,48 @@ const SwipeableScreens = () => {
   const flightData = useFlightTracking(getPollingInterval(), isRadarLoading);
 
 
-  // Native touch handlers for Linux compatibility
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    touchStartRef.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-      time: Date.now()
-    };
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = touch.clientY - touchStartRef.current.y;
-    const deltaTime = Date.now() - touchStartRef.current.time;
+  // Simple touch zone handlers
+  const handleTouchZone = (e: React.MouseEvent | React.TouchEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
     
-    // Calculate velocity
-    const velocity = Math.abs(deltaX) / deltaTime * 1000; // pixels per second
+    // Get touch/click position - handle both touch and mouse events
+    let clientX: number;
     
-    // Swipe thresholds
-    const minSwipeDistance = 48; // 10% of 480px screen width
-    const maxSwipeTime = 1000; // Maximum time for a swipe
-    const minVelocity = 300; // Minimum velocity for quick swipes
+    if ('changedTouches' in e && e.changedTouches.length > 0) {
+      // Touch event
+      clientX = e.changedTouches[0].clientX;
+    } else if ('clientX' in e) {
+      // Mouse event
+      clientX = e.clientX;
+    } else {
+      // Fallback - shouldn't happen
+      return;
+    }
     
-    // Check if it's a horizontal swipe (not vertical scroll)
-    if (Math.abs(deltaY) < Math.abs(deltaX) && 
-        deltaTime < maxSwipeTime &&
-        (Math.abs(deltaX) > minSwipeDistance || velocity > minVelocity)) {
-      
-      if (deltaX > 0 && currentScreen === 1) {
-        // Swipe right: Radar → Clock
+    const relativeX = clientX - rect.left;
+    const screenWidth = rect.width;
+    
+    // Left half goes back, right half goes forward
+    if (relativeX < screenWidth / 2) {
+      // Left side touched - go back
+      if (currentScreen === 1) {
         setCurrentScreen(0);
-      } else if (deltaX < 0 && currentScreen === 0) {
-        // Swipe left: Clock → Radar  
+      }
+    } else {
+      // Right side touched - go forward  
+      if (currentScreen === 0) {
         setCurrentScreen(1);
       }
     }
-
-    touchStartRef.current = null;
-  };
-
-  // Mouse/pointer handlers as fallback
-  const handleMouseDown = (e: React.MouseEvent) => {
-    touchStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      time: Date.now()
-    };
-  };
-
-  const handleMouseUp = (e: React.MouseEvent) => {
-    if (!touchStartRef.current) return;
-
-    const deltaX = e.clientX - touchStartRef.current.x;
-    const deltaY = e.clientY - touchStartRef.current.y;
-    const deltaTime = Date.now() - touchStartRef.current.time;
-    
-    const velocity = Math.abs(deltaX) / deltaTime * 1000;
-    const minSwipeDistance = 48;
-    const maxSwipeTime = 1000;
-    const minVelocity = 300;
-    
-    if (Math.abs(deltaY) < Math.abs(deltaX) && 
-        deltaTime < maxSwipeTime &&
-        (Math.abs(deltaX) > minSwipeDistance || velocity > minVelocity)) {
-      
-      if (deltaX > 0 && currentScreen === 1) {
-        setCurrentScreen(0);
-      } else if (deltaX < 0 && currentScreen === 0) {
-        setCurrentScreen(1);
-      }
-    }
-
-    touchStartRef.current = null;
   };
 
   return (
     <div 
       ref={containerRef}
       className="w-full h-full overflow-hidden relative"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      style={{ touchAction: 'pan-x' }} // Allow horizontal pan, prevent vertical scroll
+      onTouchEnd={handleTouchZone}
+      onClick={handleTouchZone}
     >
       <motion.div
         className="flex h-full swipe-container"
