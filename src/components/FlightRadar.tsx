@@ -48,8 +48,8 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
       {/* Radar circle */}
       <div className="w-round h-round rounded-round border-2 border-white/20 relative">
         {/* Distance rings */}
-        {[0.25, 0.5, 0.75].map((ratio) => {
-          const ringRadius = ratio * 180; // 180px is the max radius
+        {[0.2, 0.4, 0.6, 0.8, 1.0].map((ratio) => {
+          const ringRadius = ratio * 240 * 0.85; // 85% of full radius to match flight display area
           const maxRadiusNM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
           const ringDistanceNM = ratio * maxRadiusNM;
           
@@ -113,7 +113,8 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           // Calculate position on the radar circle based on actual distance
           // If aircraft is at center (0 distance), beacon is at center
           // If aircraft is at edge (maxRadiusNM distance), beacon is at edge
-          const maxScreenRadius = 180; // Maximum radius of the radar circle in pixels
+          // Use 85% of screen radius to provide padding for beacons and labels at the edge
+          const maxScreenRadius = 240 * 0.85; // 85% of full radius to keep beacons/text visible
           const distanceRatio = Math.min(distanceNM / maxRadiusNM, 1); // Cap at 1.0 for aircraft beyond our radius
           const screenRadius = distanceRatio * maxScreenRadius;
           
