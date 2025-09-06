@@ -10,16 +10,35 @@ const SwipeableScreens = () => {
   const [currentScreen, setCurrentScreen] = useState(0); // 0 = Clock, 1 = Radar
   const [isAlertActive, setIsAlertActive] = useState(false);
   const [isRadarLoading, setIsRadarLoading] = useState(false);
+  const [isClockLoading, setIsClockLoading] = useState(false);
   
   // Touch zones for screen navigation
   const containerRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
   
-  // Add delay when switching to radar to prevent API rate limiting
+  // Add delay when switching screens to prevent API rate limiting
   useEffect(() => {
+    // Skip loading on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
     if (currentScreen === 1) {
+      // Switching to radar
       setIsRadarLoading(true);
+      setIsClockLoading(false);
       const timer = setTimeout(() => {
         setIsRadarLoading(false);
+      }, 1500); // 1.5 second delay
+      
+      return () => clearTimeout(timer);
+    } else if (currentScreen === 0) {
+      // Switching to clock
+      setIsClockLoading(true);
+      setIsRadarLoading(false);
+      const timer = setTimeout(() => {
+        setIsClockLoading(false);
       }, 1500); // 1.5 second delay
       
       return () => clearTimeout(timer);
@@ -28,17 +47,20 @@ const SwipeableScreens = () => {
 
   // Determine polling interval based on screen and alert state
   const getPollingInterval = useCallback(() => {
-    if (currentScreen === 0 || isRadarLoading) {
-      // Clock screen or radar loading: conditional polling based on alert state
+    if (currentScreen === 0 && !isClockLoading) {
+      // Clock screen (not loading): conditional polling based on alert state
       return isAlertActive ? 5000 : 30000;
-    } else {
-      // Radar screen: continuous 5s polling
+    } else if (currentScreen === 1 && !isRadarLoading) {
+      // Radar screen (not loading): continuous 5s polling
       return 5000;
+    } else {
+      // Loading state: use slower polling
+      return 30000;
     }
-  }, [currentScreen, isAlertActive, isRadarLoading]);
+  }, [currentScreen, isAlertActive, isRadarLoading, isClockLoading]);
   
-  // Single shared flight tracking instance (disabled during radar loading)
-  const flightData = useFlightTracking(getPollingInterval(), isRadarLoading);
+  // Single shared flight tracking instance (disabled during any loading)
+  const flightData = useFlightTracking(getPollingInterval(), isRadarLoading || isClockLoading);
 
 
   // Simple touch zone handlers
@@ -86,8 +108,8 @@ const SwipeableScreens = () => {
     >
       <motion.div
         className="flex h-full swipe-container"
-        style={{ width: '200vw', cursor: 'default' }}
-        animate={{ x: currentScreen === 0 ? '0vw' : '-100vw' }}
+        style={{ width: 'calc(200% + 0px)', cursor: 'default' }}
+        animate={{ x: currentScreen === 0 ? '0%' : '-50%' }}
         transition={{ 
           type: "tween", 
           duration: 0.3, 
@@ -95,21 +117,31 @@ const SwipeableScreens = () => {
         }}
       >
         {/* Screen 1: Flight Tracking Clock */}
-        <div className="h-full flex-shrink-0" style={{ width: '100vw' }}>
-          <FlightTrackingClock 
-            sharedFlightData={flightData}
-            isAlertActive={isAlertActive}
-            setIsAlertActive={setIsAlertActive}
-          />
+        <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
+          {isClockLoading ? (
+            <div className="w-full h-full bg-black flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-round h-round rounded-round border-2 border-white/20 relative mx-auto mb-4 flex items-center justify-center">
+                  <div className="text-white/60 text-sm">Loading FlightClock...</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <FlightTrackingClock 
+              sharedFlightData={flightData}
+              isAlertActive={isAlertActive}
+              setIsAlertActive={setIsAlertActive}
+            />
+          )}
         </div>
         
         {/* Screen 2: Flight Radar */}
-        <div className="h-full flex-shrink-0" style={{ width: '100vw' }}>
+        <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
           {isRadarLoading ? (
             <div className="w-full h-full bg-black flex items-center justify-center">
               <div className="text-center">
                 <div className="w-round h-round rounded-round border-2 border-white/20 relative mx-auto mb-4 flex items-center justify-center">
-                  <div className="text-white/60 text-sm">Loading radar...</div>
+                  <div className="text-white/60 text-sm">Loading FlightRadar...</div>
                 </div>
               </div>
             </div>
