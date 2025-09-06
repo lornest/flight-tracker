@@ -31,7 +31,7 @@ const AppWrapper = () => {
     loadConfig();
   }, []);
 
-  const handleSetupComplete = (setupData: any) => {
+  const handleSetupComplete = (setupData: { latitude: number; longitude: number; facingDirection: string }) => {
     const newConfig = {
       latitude: setupData.latitude,
       longitude: setupData.longitude,

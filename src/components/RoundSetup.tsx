@@ -21,7 +21,7 @@ const RoundSetup = ({ onSetupComplete }: RoundSetupProps) => {
     longitude: parseFloat(process.env.NEXT_PUBLIC_LONGITUDE || '0'),
     facingDirection: 'N'
   });
-  const [systemInfo, setSystemInfo] = useState<{
+  const [, setSystemInfo] = useState<{
     wifiConnected: boolean;
     networkName: string;
   }>({ wifiConnected: false, networkName: '' });

@@ -15,7 +15,7 @@ const SettingsScreen = ({ currentConfig, onConfigUpdate, onClose }: SettingsScre
   const [showSetup, setShowSetup] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  const handleSetupComplete = (data: any) => {
+  const handleSetupComplete = (data: { latitude: number; longitude: number; facingDirection: string }) => {
     onConfigUpdate({
       latitude: data.latitude,
       longitude: data.longitude,

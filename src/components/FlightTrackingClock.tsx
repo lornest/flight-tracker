@@ -54,13 +54,13 @@ const FlightTrackingClock = ({ sharedFlightData, isAlertActive, setIsAlertActive
     } else {
       setIsAlertActive(false);
     }
-  }, [hasNewFlight, clearNewFlightAlert]);
+  }, [hasNewFlight, clearNewFlightAlert, setIsAlertActive]);
   
   // Manual dismiss handler
   const handleDismiss = React.useCallback(() => {
     clearNewFlightAlert();
     setIsAlertActive(false);
-  }, [clearNewFlightAlert]);
+  }, [clearNewFlightAlert, setIsAlertActive]);
 
   // Log flight updates for debugging
   React.useEffect(() => {

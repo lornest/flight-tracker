@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface WifiNetwork {
   ssid: string;
@@ -55,7 +55,7 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
       } else {
         setNetworks(data.networks || []);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to scan networks');
     } finally {
       setIsScanning(false);
@@ -88,18 +88,11 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
       } else {
         setError(data.error || 'Connection failed');
       }
-    } catch (err) {
+    } catch {
       setError('Connection failed');
     } finally {
       setIsConnecting(false);
     }
-  };
-
-  const getSignalIcon = (signal: number) => {
-    if (signal > 75) return '📶';
-    if (signal > 50) return '📶';
-    if (signal > 25) return '📶';
-    return '📶';
   };
 
   const getSignalBars = (signal: number) => {

@@ -28,7 +28,7 @@ export async function GET() {
       const { stdout: ssidOutput } = await execAsync('iwgetid -r', { timeout: 5000 });
       networkName = ssidOutput.trim();
       wifiConnected = networkName.length > 0;
-    } catch (error) {
+    } catch {
       // iwgetid failed, try alternative method
       try {
         const { stdout: iwconfigOutput } = await execAsync('iwconfig 2>/dev/null | grep ESSID', { timeout: 5000 });
@@ -37,7 +37,7 @@ export async function GET() {
           networkName = essidMatch[1];
           wifiConnected = true;
         }
-      } catch (iwconfigError) {
+      } catch {
         console.log('Both iwgetid and iwconfig failed, checking nmcli');
         
         // Try NetworkManager
@@ -47,7 +47,7 @@ export async function GET() {
             networkName = nmcliOutput.split(':')[1] || 'Connected';
             wifiConnected = true;
           }
-        } catch (nmcliError) {
+        } catch {
           console.log('All Wi-Fi detection methods failed');
         }
       }

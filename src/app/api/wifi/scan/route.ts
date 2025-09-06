@@ -51,7 +51,7 @@ export async function GET() {
         };
       }).filter(network => network.ssid && network.ssid !== '--');
       
-    } catch (nmcliError) {
+    } catch {
       console.log('nmcli failed, trying iwlist scan...');
       
       try {

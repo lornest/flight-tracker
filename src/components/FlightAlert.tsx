@@ -45,16 +45,6 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
   
   if (!isVisible) return null;
 
-  // Calculate rotation for the main plane icon (first new flight)
-  const mainPlaneRotation = userLocation && newFlightsWithInfo && newFlightsWithInfo.length > 0 
-    ? calculatePlaneRotation(
-        userLocation.latitude,
-        userLocation.longitude,
-        newFlightsWithInfo[0].flight.lat || 0,
-        newFlightsWithInfo[0].flight.lon || 0,
-        userLocation.facingDirection
-      )
-    : 0;
 
   return (
     <motion.div

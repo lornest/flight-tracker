@@ -59,10 +59,6 @@ const Clock = () => {
   const hours = time.getHours();
   const minutes = time.getMinutes();
   const seconds = time.getSeconds();
-  const day = time.getDate();
-  const month = time.toLocaleDateString('en-US', { month: 'short' });
-  const year = time.getFullYear();
-  const weekday = time.toLocaleDateString('en-US', { weekday: 'long' });
 
   // Calculate angles for clock hands with accumulated rotations to prevent backwards jumping
   const secondAngle = (seconds * 6) - 90 + secondRotations; // 6 degrees per second + accumulated rotations

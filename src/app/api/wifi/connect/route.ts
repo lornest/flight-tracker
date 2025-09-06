@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       }
       
       console.log('Attempting to connect to Wi-Fi...');
-      const { stdout, stderr } = await execAsync(nmcliCommand, { timeout: 30000 });
+      const { stderr } = await execAsync(nmcliCommand, { timeout: 30000 });
       
       if (stderr && stderr.includes('Error')) {
         throw new Error(stderr);

@@ -109,7 +109,7 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
       clearTimeout(initialTimeout);
       clearInterval(interval);
     };
-  }, [intervalMs, disabled]); // Removed fetchFlights from deps to prevent recreation loops
+  }, [intervalMs, disabled, fetchFlights]);
 
 
   return {
