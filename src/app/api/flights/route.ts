@@ -22,8 +22,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ 
         flights: [], 
         newFlights: [],
+        newFlightsWithInfo: [],
         total: 0,
-        error: 'No aircraft data received'
+        timestamp: Date.now(),
+        lastUpdate: flightTracker.getLastUpdate(),
+        userLocation: {
+          latitude: lat,
+          longitude: lon,
+          facingDirection: facing
+        }
       });
     }
 

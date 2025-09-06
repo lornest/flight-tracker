@@ -48,7 +48,6 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
   const fetchFlights = useCallback(async () => {
     // Prevent overlapping requests
     if (isFetchingRef.current) {
-      console.log('Fetch already in progress, skipping');
       return;
     }
     
@@ -76,7 +75,6 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
         // Check for new flights
         if (data.newFlights && data.newFlights.length > 0) {
           setHasNewFlight(true);
-          console.log('New flights detected:', data.newFlights);
         }
       }
     } catch (err) {
@@ -95,24 +93,24 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
   // Auto-fetch flights at specified interval (only when not disabled)
   useEffect(() => {
     if (disabled) {
-      console.log('Flight tracking disabled, skipping fetch');
       return;
     }
-    
-    console.log('Flight tracking enabled, starting fetch with interval:', intervalMs);
     
     // Initial fetch with a small delay to avoid rapid-fire requests
     const initialTimeout = setTimeout(() => {
       fetchFlights();
     }, 500);
     
-    const interval = setInterval(fetchFlights, intervalMs);
+    const interval = setInterval(() => {
+      fetchFlights();
+    }, intervalMs);
     
     return () => {
       clearTimeout(initialTimeout);
       clearInterval(interval);
     };
   }, [intervalMs, disabled]); // Removed fetchFlights from deps to prevent recreation loops
+
 
   return {
     flights: flightData.flights,

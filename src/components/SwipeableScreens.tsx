@@ -75,10 +75,6 @@ const SwipeableScreens = ({ userConfig, onSettingsAccess }: SwipeableScreensProp
   // Single shared flight tracking instance (disabled during any loading)
   const isAnyLoading = isRadarLoading || isClockLoading;
   
-  // Debug logging
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Screen state:', { currentScreen, isRadarLoading, isClockLoading, isAnyLoading });
-  }
   
   const flightData = useFlightTracking(
     isAnyLoading ? 60000 : getPollingInterval(), // Use very slow interval when loading

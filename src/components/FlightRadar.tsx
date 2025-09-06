@@ -30,10 +30,6 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
     error
   } = flightData;
 
-  // Debug: Check if userLocation is available
-  if (process.env.NODE_ENV === 'development') {
-    console.log('FlightRadar userLocation:', userLocation);
-  }
 
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
 
@@ -55,9 +51,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
   }
 
   return (
-    <div className="w-full h-full bg-black flex items-center justify-center overflow-hidden relative">
-      {/* Radar circle */}
-      <div className="w-round h-round rounded-round border-2 border-white/20 relative">
+    <div className="w-round h-round rounded-round bg-black flex items-center justify-center overflow-hidden relative border-2 border-white/20">
         {/* Distance rings */}
         {[0.2, 0.4, 0.6, 0.8, 1.0].map((ratio) => {
           const ringRadius = ratio * 240 * 0.85; // 85% of full radius to match flight display area
@@ -103,15 +97,6 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           </div>
         )}
         
-        {/* Debug indicator - always show */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="bg-red-600/80 backdrop-blur-sm rounded-lg px-4 py-2 text-white text-xs">
-              Debug: {userLocation ? `Facing ${userLocation.facingDirection}` : 'No userLocation'}
-            </div>
-          </div>
-        )}
-        
         {/* Flight beacons */}
         {userLocation && flights && flights.map((flight) => {
           // Skip flights without valid coordinates
@@ -153,10 +138,6 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           const x = Math.cos(angleRad) * screenRadius;
           const y = Math.sin(angleRad) * screenRadius;
           
-          // Debug logging to verify facing direction is working
-          if (process.env.NODE_ENV === 'development' && flight.flight) {
-            console.log(`Flight ${flight.flight}: facing=${userLocation.facingDirection}, rotation=${rotation.toFixed(1)}°, screenPos=(${x.toFixed(0)}, ${y.toFixed(0)})`);
-          }
           
           return (
             <motion.div
@@ -379,7 +360,6 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
             </motion.div>
           </motion.div>
         )}
-      </div>
     </div>
   );
 };
