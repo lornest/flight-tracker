@@ -90,112 +90,116 @@ const RoundSetup = ({ onSetupComplete }: RoundSetupProps) => {
 
 
   const renderLocationSetup = () => (
-    <div className="w-full h-full bg-black flex items-center justify-center p-8">
-      <div className="w-full max-w-sm text-center space-y-6">
-        <div className="text-white text-xl font-bold">Location</div>
-      
-      {/* Quick presets */}
-      <div className="grid grid-cols-2 gap-3">
-        {presetLocations.map((location) => (
+    <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className="w-round h-round rounded-round flex items-center justify-center p-8 overflow-hidden">
+        <div className="w-full max-w-xs text-center space-y-4">
+          <div className="text-white text-2xl font-bold">Location</div>
+        
+          {/* Quick presets */}
+          <div className="grid grid-cols-2 gap-2">
+            {presetLocations.map((location) => (
+              <button
+                key={location.name}
+                onClick={() => handleCoordinateInput(location.lat, location.lon)}
+                className={`p-3 rounded-lg border transition-all text-base ${
+                  setupData.latitude === location.lat && setupData.longitude === location.lon
+                    ? 'bg-blue-600 border-blue-400 text-white'
+                    : 'bg-white/10 border-white/20 text-white hover:border-white/40'
+                }`}
+              >
+                <div className="font-bold">{location.name}</div>
+                <div className="text-sm text-white/70">
+                  {location.lat.toFixed(1)}, {location.lon.toFixed(1)}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Custom input */}
+          <div className="space-y-2">
+            <div className="text-white/70 text-base">Or enter coordinates:</div>
+            <div className="flex space-x-2">
+              <input
+                type="number"
+                step="any"
+                value={setupData.latitude || ''}
+                onChange={(e) => handleCoordinateInput(parseFloat(e.target.value) || 0, setupData.longitude)}
+                placeholder="Latitude"
+                className="flex-1 bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-center font-mono text-base"
+              />
+              <input
+                type="number"
+                step="any"
+                value={setupData.longitude || ''}
+                onChange={(e) => handleCoordinateInput(setupData.latitude, parseFloat(e.target.value) || 0)}
+                placeholder="Longitude"
+                className="flex-1 bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-center font-mono text-base"
+              />
+            </div>
+          </div>
+
           <button
-            key={location.name}
-            onClick={() => handleCoordinateInput(location.lat, location.lon)}
-            className={`p-3 rounded-lg border transition-all ${
-              setupData.latitude === location.lat && setupData.longitude === location.lon
-                ? 'bg-blue-600 border-blue-400 text-white'
-                : 'bg-white/10 border-white/20 text-white hover:border-white/40'
+            onClick={handleNext}
+            disabled={!setupData.latitude || !setupData.longitude}
+            className={`px-8 py-3 rounded-full font-bold transition-all text-base ${
+              setupData.latitude && setupData.longitude
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-white/20 text-white/40 cursor-not-allowed'
             }`}
           >
-            <div className="font-semibold">{location.name}</div>
-            <div className="text-xs text-white/60">
-              {location.lat.toFixed(1)}, {location.lon.toFixed(1)}
-            </div>
+            Continue
           </button>
-        ))}
-      </div>
-
-      {/* Custom input */}
-      <div className="space-y-3">
-        <div className="text-white/70 text-sm">Or enter coordinates:</div>
-        <div className="flex space-x-2">
-          <input
-            type="number"
-            step="any"
-            value={setupData.latitude || ''}
-            onChange={(e) => handleCoordinateInput(parseFloat(e.target.value) || 0, setupData.longitude)}
-            placeholder="Latitude"
-            className="flex-1 bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-center font-mono text-sm"
-          />
-          <input
-            type="number"
-            step="any"
-            value={setupData.longitude || ''}
-            onChange={(e) => handleCoordinateInput(setupData.latitude, parseFloat(e.target.value) || 0)}
-            placeholder="Longitude"
-            className="flex-1 bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-center font-mono text-sm"
-          />
         </div>
-      </div>
-
-        <button
-          onClick={handleNext}
-          disabled={!setupData.latitude || !setupData.longitude}
-          className={`px-8 py-3 rounded-full font-semibold transition-all ${
-            setupData.latitude && setupData.longitude
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-white/20 text-white/40 cursor-not-allowed'
-          }`}
-        >
-          Continue
-        </button>
       </div>
     </div>
   );
 
   const renderDirectionSetup = () => (
-    <div className="w-full h-full bg-black flex items-center justify-center p-8">
-      <div className="w-full max-w-sm text-center space-y-6">
-        <div className="text-white text-xl font-bold">Facing Direction</div>
-      <div className="text-white/60 text-sm">Which way are you looking?</div>
-      
-      {/* Compass circle */}
-      <div className="relative w-48 h-48 mx-auto">
-        <div className="absolute inset-0 rounded-full border-2 border-white/20"></div>
+    <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className="w-round h-round rounded-round flex items-center justify-center p-8 overflow-hidden">
+        <div className="w-full max-w-xs text-center space-y-4">
+          <div className="text-white text-2xl font-bold">Facing Direction</div>
+          <div className="text-white/70 text-base">Which way are you looking?</div>
         
-        {directions.map((dir) => {
-          const angle = (dir.angle - 90) * (Math.PI / 180);
-          const x = Math.cos(angle) * 80;
-          const y = Math.sin(angle) * 80;
-          
-          return (
-            <button
-              key={dir.value}
-              onClick={() => setSetupData(prev => ({ ...prev, facingDirection: dir.value }))}
-              className={`absolute w-12 h-12 rounded-full border-2 flex items-center justify-center font-semibold transition-all ${
-                setupData.facingDirection === dir.value
-                  ? 'bg-blue-600 border-blue-400 text-white scale-110'
-                  : 'bg-white/10 border-white/20 text-white hover:border-white/40'
-              }`}
-              style={{
-                left: `calc(50% + ${x}px - 24px)`,
-                top: `calc(50% + ${y}px - 24px)`
-              }}
-            >
-              {dir.label}
-            </button>
-          );
-        })}
-        
-        {/* Center indicator */}
-        <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-      </div>
+          {/* Compass circle - smaller for round display */}
+          <div className="relative w-40 h-40 mx-auto">
+            <div className="absolute inset-0 rounded-full border-2 border-white/20"></div>
+            
+            {directions.map((dir) => {
+              const angle = (dir.angle - 90) * (Math.PI / 180);
+              const x = Math.cos(angle) * 65;
+              const y = Math.sin(angle) * 65;
+              
+              return (
+                <button
+                  key={dir.value}
+                  onClick={() => setSetupData(prev => ({ ...prev, facingDirection: dir.value }))}
+                  className={`absolute w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold text-base transition-all ${
+                    setupData.facingDirection === dir.value
+                      ? 'bg-blue-600 border-blue-400 text-white scale-110'
+                      : 'bg-white/10 border-white/20 text-white hover:border-white/40'
+                  }`}
+                  style={{
+                    left: `calc(50% + ${x}px - 24px)`,
+                    top: `calc(50% + ${y}px - 24px)`
+                  }}
+                >
+                  {dir.label}
+                </button>
+              );
+            })}
+            
+            {/* Center indicator */}
+            <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+          </div>
 
-        <button
-          onClick={handleNext}
-          className="px-8 py-3 rounded-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-all"
-        >
-          Complete Setup
-        </button>
+          <button
+            onClick={handleNext}
+            className="px-8 py-3 rounded-full bg-green-600 hover:bg-green-700 text-white font-bold transition-all text-base"
+          >
+            Complete Setup
+          </button>
+        </div>
       </div>
     </div>
   );

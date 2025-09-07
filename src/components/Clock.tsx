@@ -80,8 +80,8 @@ const Clock = () => {
             key={angle}
             className={`absolute bg-white origin-bottom ${
               isFiveMinute 
-                ? 'w-0.5 h-6' // Longer, thicker markers for 5-minute intervals
-                : 'w-px h-3'   // Shorter, thinner markers for single minutes
+                ? 'w-1 h-8' // Longer, thicker markers for 5-minute intervals
+                : 'w-0.5 h-4'   // Shorter, thinner markers for single minutes
             }`}
             style={{
               top: isFiveMinute ? '16px' : '19px',
@@ -97,7 +97,7 @@ const Clock = () => {
       <div className="absolute inset-0 rounded-full">
         {/* Hour hand */}
         <motion.div
-          className="absolute w-1.5 bg-white origin-bottom clock-hand"
+          className="absolute w-2 bg-white origin-bottom clock-hand"
           style={{
             height: '120px',
             top: '120px',
@@ -111,7 +111,7 @@ const Clock = () => {
         
         {/* Minute hand */}
         <motion.div
-          className="absolute w-1 bg-white origin-bottom clock-hand"
+          className="absolute w-1.5 bg-white origin-bottom clock-hand"
           style={{
             height: '160px',
             top: '80px',
@@ -125,7 +125,7 @@ const Clock = () => {
         
         {/* Second hand */}
         <motion.div
-          className="absolute w-px bg-white origin-bottom clock-hand"
+          className="absolute w-0.5 bg-white origin-bottom clock-hand"
           style={{
             height: '180px',
             top: '60px',
@@ -139,7 +139,7 @@ const Clock = () => {
       </div>
 
       {/* Center dot */}
-      <div className="absolute w-2 h-2 bg-white rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"></div>
+      <div className="absolute w-3 h-3 bg-white rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"></div>
     </div>
   );
 };

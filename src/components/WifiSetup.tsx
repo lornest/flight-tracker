@@ -110,33 +110,35 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
   // If already connected, show status
   if (currentSSID && !selectedNetwork) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center p-8">
-        <div className="text-center space-y-6">
-          <div className="w-16 h-16 mx-auto bg-green-600 rounded-full flex items-center justify-center">
-            <div className="text-white text-2xl">📶</div>
-          </div>
-          
-          <div className="space-y-2">
-            <h2 className="text-white text-xl font-bold">Wi-Fi Connected</h2>
-            <p className="text-white/70 text-sm">{currentSSID}</p>
-          </div>
-
-          <div className="space-y-3">
-            <motion.button
-              onClick={() => setCurrentSSID('')}
-              whileTap={{ scale: 0.95 }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors"
-            >
-              Change Network
-            </motion.button>
+      <div className="w-full h-full bg-black flex items-center justify-center">
+        <div className="w-round h-round rounded-round flex items-center justify-center p-8 overflow-hidden">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-green-600 rounded-full flex items-center justify-center">
+              <div className="text-white text-2xl">📶</div>
+            </div>
             
-            <motion.button
-              onClick={onWifiConnected}
-              whileTap={{ scale: 0.95 }}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors"
-            >
-              Continue Setup
-            </motion.button>
+            <div className="space-y-2">
+              <h2 className="text-white text-2xl font-bold">Wi-Fi Connected</h2>
+              <p className="text-white/70 text-base">{currentSSID}</p>
+            </div>
+
+            <div className="space-y-3">
+              <motion.button
+                onClick={() => setCurrentSSID('')}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-5 rounded-lg font-bold transition-colors text-base"
+              >
+                Change Network
+              </motion.button>
+              
+              <motion.button
+                onClick={onWifiConnected}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-5 rounded-lg font-bold transition-colors text-base"
+              >
+                Continue Setup
+              </motion.button>
+            </div>
           </div>
         </div>
       </div>
@@ -146,11 +148,12 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
   // Network selection screen
   if (!selectedNetwork) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center p-6 overflow-hidden">
-        <div className="w-full max-w-sm space-y-4">
+      <div className="w-full h-full bg-black flex items-center justify-center">
+        <div className="w-round h-round rounded-round flex items-center justify-center p-6 overflow-hidden">
+          <div className="w-full max-w-xs space-y-4">
           <div className="text-center space-y-2">
-            <h1 className="text-white text-xl font-bold">Wi-Fi Setup</h1>
-            <p className="text-white/60 text-sm">Select your network</p>
+            <h1 className="text-white text-2xl font-bold">Wi-Fi Setup</h1>
+            <p className="text-white/70 text-base">Select your network</p>
           </div>
 
           {/* Scan button */}
@@ -158,7 +161,7 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
             onClick={scanNetworks}
             disabled={isScanning}
             whileTap={{ scale: 0.95 }}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-2 px-4 rounded-lg font-semibold transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-3 px-4 rounded-lg font-bold text-base transition-colors"
           >
             {isScanning ? 'Scanning...' : 'Scan Networks'}
           </motion.button>
@@ -171,12 +174,12 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
                 onClick={() => setSelectedNetwork(network)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg p-3 transition-all"
+                className="w-full bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg p-4 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div className="text-left flex-1">
-                    <div className="text-white font-medium">{network.ssid}</div>
-                    <div className="text-white/60 text-xs">
+                    <div className="text-white font-bold text-base">{network.ssid}</div>
+                    <div className="text-white/70 text-sm">
                       {network.security} • {network.frequency}
                     </div>
                   </div>
@@ -189,7 +192,7 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
           </div>
 
           {error && (
-            <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+            <div className="text-red-400 text-base text-center bg-red-900/20 border border-red-500/30 rounded-lg p-4">
               {error}
             </div>
           )}
@@ -198,10 +201,11 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
           <motion.button
             onClick={onSkip}
             whileTap={{ scale: 0.95 }}
-            className="w-full bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg font-semibold transition-colors"
+            className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-lg font-bold text-base transition-colors"
           >
             Skip Wi-Fi Setup
           </motion.button>
+          </div>
         </div>
       </div>
     );
@@ -209,51 +213,53 @@ const WifiSetup = ({ onWifiConnected, onSkip }: WifiSetupProps) => {
 
   // Password entry screen
   return (
-    <div className="w-full h-full bg-black flex items-center justify-center p-8">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center space-y-2">
-          <h2 className="text-white text-xl font-bold">Connect to Network</h2>
-          <p className="text-white/70 text-sm">{selectedNetwork.ssid}</p>
-        </div>
+    <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className="w-round h-round rounded-round flex items-center justify-center p-8 overflow-hidden">
+        <div className="w-full max-w-xs space-y-4">
+          <div className="text-center space-y-2">
+            <h2 className="text-white text-2xl font-bold">Connect to Network</h2>
+            <p className="text-white/70 text-base">{selectedNetwork?.ssid}</p>
+          </div>
 
-        {selectedNetwork.security !== 'Open' && (
-          <div className="space-y-2">
-            <label className="block text-white/70 text-sm">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50"
-              placeholder="Enter password"
+          {selectedNetwork?.security !== 'Open' && (
+            <div className="space-y-2">
+              <label className="block text-white/70 text-base">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 text-base"
+                placeholder="Enter password"
+                disabled={isConnecting}
+              />
+            </div>
+          )}
+
+          {error && (
+            <div className="text-red-400 text-base text-center bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+              {error}
+            </div>
+          )}
+
+          <div className="flex space-x-2">
+            <motion.button
+              onClick={() => setSelectedNetwork(null)}
               disabled={isConnecting}
-            />
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white py-3 px-3 rounded-lg transition-colors text-base font-medium"
+            >
+              Back
+            </motion.button>
+            
+            <motion.button
+              onClick={connectToNetwork}
+              disabled={isConnecting || (selectedNetwork?.security !== 'Open' && !password)}
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-3 px-3 rounded-lg font-bold transition-colors text-base"
+            >
+              {isConnecting ? 'Connecting...' : 'Connect'}
+            </motion.button>
           </div>
-        )}
-
-        {error && (
-          <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-500/30 rounded-lg p-3">
-            {error}
-          </div>
-        )}
-
-        <div className="flex space-x-3">
-          <motion.button
-            onClick={() => setSelectedNetwork(null)}
-            disabled={isConnecting}
-            whileTap={{ scale: 0.95 }}
-            className="flex-1 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white py-3 px-4 rounded-lg transition-colors"
-          >
-            Back
-          </motion.button>
-          
-          <motion.button
-            onClick={connectToNetwork}
-            disabled={isConnecting || (selectedNetwork.security !== 'Open' && !password)}
-            whileTap={{ scale: 0.95 }}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-3 px-4 rounded-lg font-semibold transition-colors"
-          >
-            {isConnecting ? 'Connecting...' : 'Connect'}
-          </motion.button>
         </div>
       </div>
     </div>

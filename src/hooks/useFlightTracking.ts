@@ -7,6 +7,7 @@ interface FlightData {
   flights: Flight[];
   newFlights: string[];
   newFlightsWithInfo?: Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>;
+  allFlightInfo?: Record<string, FlightInfo>;
   total: number;
   timestamp: number;
   lastUpdate: number;
@@ -116,6 +117,7 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
     flights: flightData.flights,
     newFlights: flightData.newFlights,
     newFlightsWithInfo: flightData.newFlightsWithInfo || [],
+    allFlightInfo: flightData.allFlightInfo ? new Map(Object.entries(flightData.allFlightInfo)) : new Map(),
     totalFlights: flightData.total,
     lastUpdate: flightData.lastUpdate,
     userLocation: flightData.userLocation,

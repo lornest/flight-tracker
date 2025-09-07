@@ -80,7 +80,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
         onClick={onDismiss}
         className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
       >
-        <X className="w-4 h-4 text-white/70" />
+        <X className="w-6 h-6 text-white/70" />
       </button>
 
       {/* Main content */}
@@ -103,7 +103,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
             ease: "easeInOut" 
           }}
         >
-          <Plane className="w-16 h-16 text-white mx-auto" />
+          <Plane className="w-20 h-20 text-white mx-auto" />
         </motion.div>
 
         {/* Real-time beacons for all current flights */}
@@ -164,7 +164,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
               {/* Flight number label */}
               {flight.flight && (
                 <div 
-                  className="absolute text-xs font-semibold whitespace-nowrap text-yellow-300"
+                  className="absolute text-sm font-semibold whitespace-nowrap text-yellow-300"
                   style={{
                     left: '50%',
                     top: '100%',
@@ -181,7 +181,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
 
         {/* Alert text */}
         <motion.h1
-          className="text-4xl font-light text-white mb-3"
+          className="text-5xl font-light text-white mb-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
@@ -219,32 +219,32 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
                 >
                   {/* Flight number */}
                   {flightData.flight.flight && (
-                    <div className="text-white font-semibold text-xl mb-2">
+                    <div className="text-white font-semibold text-2xl mb-3">
                       {flightData.flight.flight}
                     </div>
                   )}
                   
                   {/* Direction indicator */}
-                  <div className="text-white/60 text-sm mb-2 italic">
+                  <div className="text-white/60 text-base mb-3 italic">
                     Look {relativeDirection}
                   </div>
                 
                 {/* Route information */}
                 {flightData.info ? (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-center gap-2 text-white/80 text-base">
+                    <div className="flex items-center justify-center gap-3 text-white/80 text-lg">
                       <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
+                        <MapPin className="w-5 h-5" />
                         <span>{flightData.info.origin?.airport || flightData.info.origin?.iata || 'Unknown'}</span>
                       </div>
                       <span>→</span>
                       <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
+                        <MapPin className="w-5 h-5" />
                         <span>{flightData.info.destination?.airport || flightData.info.destination?.iata || 'Unknown'}</span>
                       </div>
                     </div>
                     {flightData.info.route && (
-                      <div className="text-white/60 text-sm">
+                      <div className="text-white/60 text-base">
                         {flightData.info.route}
                       </div>
                     )}
@@ -271,7 +271,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
           </motion.div>
         ) : (
           <motion.p
-            className="text-white/70 text-xl mb-4"
+            className="text-white/70 text-2xl mb-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
@@ -285,7 +285,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
 
         {/* Flight count */}
         <motion.div
-          className="bg-white/10 backdrop-blur-sm rounded-full px-6 py-2 text-white/90 text-lg"
+          className="bg-white/10 backdrop-blur-sm rounded-full px-8 py-3 text-white/90 text-xl"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.9 }}

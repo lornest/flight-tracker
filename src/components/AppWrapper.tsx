@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import SwipeableScreens from './SwipeableScreens';
-import RoundSetup from './RoundSetup';
-import QuickSettings from './QuickSettings';
-import { getConfig, saveConfig, isFirstTimeSetup, markSetupComplete, AppConfig } from '@/lib/config';
+import { SetupQR } from './SetupQR';
+import SimpleSettings from './SimpleSettings';
+import { getConfig, saveConfig, isFirstTimeSetup, AppConfig } from '@/lib/config';
 
 type AppMode = 'setup' | 'main' | 'settings';
 
@@ -31,20 +31,6 @@ const AppWrapper = () => {
     loadConfig();
   }, []);
 
-  const handleSetupComplete = (setupData: { latitude: number; longitude: number; facingDirection: string }) => {
-    const newConfig = {
-      latitude: setupData.latitude,
-      longitude: setupData.longitude,
-      facingDirection: setupData.facingDirection
-    };
-    
-    saveConfig(newConfig);
-    markSetupComplete();
-    
-    const updatedConfig = getConfig();
-    setConfig(updatedConfig);
-    setAppMode('main');
-  };
 
   const handleConfigUpdate = (newConfig: Partial<AppConfig>) => {
     saveConfig(newConfig);
@@ -76,11 +62,11 @@ const AppWrapper = () => {
   // Render appropriate screen based on app mode
   switch (appMode) {
     case 'setup':
-      return <RoundSetup onSetupComplete={handleSetupComplete} />;
+      return <SetupQR />;
     
     case 'settings':
       return (
-        <QuickSettings
+        <SimpleSettings
           currentConfig={config!}
           onConfigUpdate={handleConfigUpdate}
           onClose={handleSettingsClose}

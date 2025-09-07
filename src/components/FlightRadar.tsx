@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Flight, FlightInfo } from '@/types/flight';
 import { calculatePlaneRotation, calculateDistance } from '@/lib/utils/bearing';
@@ -10,6 +10,7 @@ interface FlightRadarProps {
     flights: Flight[];
     newFlights: string[];
     newFlightsWithInfo: Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>;
+    allFlightInfo: Map<string, FlightInfo>;
     totalFlights: number;
     lastUpdate: number;
     userLocation: { latitude: number; longitude: number; facingDirection: string } | undefined;
@@ -25,17 +26,29 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
   const {
     flights,
     newFlightsWithInfo,
+    allFlightInfo,
     userLocation,
     isLoading,
     error
   } = flightData;
 
 
-  const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
+  const [selectedFlightHex, setSelectedFlightHex] = useState<string | null>(null);
+  
+  // Get current flight data for selected flight
+  const selectedFlight = selectedFlightHex ? flights.find(f => f.hex === selectedFlightHex) : null;
+  
+  // Auto-close modal if selected flight is no longer in range
+  useEffect(() => {
+    if (selectedFlightHex && !selectedFlight) {
+      setSelectedFlightHex(null);
+    }
+  }, [selectedFlightHex, selectedFlight]);
 
   // Helper function to get flight info for a specific flight
   const getFlightInfo = (flight: Flight) => {
-    return newFlightsWithInfo.find(info => info.hexCode === flight.hex)?.info;
+    // First check persistent flight info, then fallback to new flight info
+    return allFlightInfo.get(flight.hex) || newFlightsWithInfo.find(info => info.hexCode === flight.hex)?.info;
   };
 
   // Only show error for actual connection/API errors, not "no flights" scenarios
@@ -55,8 +68,6 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
         {/* Distance rings */}
         {[0.2, 0.4, 0.6, 0.8, 1.0].map((ratio) => {
           const ringRadius = ratio * 240 * 0.85; // 85% of full radius to match flight display area
-          const maxRadiusNM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
-          const ringDistanceNM = ratio * maxRadiusNM;
           
           return (
             <div
@@ -69,19 +80,7 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                 top: '50%',
                 transform: 'translate(-50%, -50%)'
               }}
-            >
-              {/* Distance label */}
-              <div 
-                className="absolute text-xs text-white/40 font-mono"
-                style={{
-                  right: '-20px',
-                  top: '50%',
-                  transform: 'translateY(-50%)'
-                }}
-              >
-                {ringDistanceNM.toFixed(1)}nm
-              </div>
-            </div>
+            />
           );
         })}
         
@@ -90,8 +89,8 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
         
         {/* Facing direction indicator */}
         {userLocation && (
-          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="bg-blue-600/80 backdrop-blur-sm rounded-lg px-4 py-2 text-white text-sm font-bold border border-white/20">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-blue-600/80 backdrop-blur-sm rounded-lg px-8 py-4 text-white text-xl font-bold border border-white/20">
               ↑ {userLocation.facingDirection}
             </div>
           </div>
@@ -161,30 +160,30 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedFlight(flight);
+                setSelectedFlightHex(flight.hex);
               }}
             >
-              {/* White triangle beacon pointing inward */}
+              {/* White triangle beacon pointing inward - larger for visibility */}
               <div
-                className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-white"
+                className="w-0 h-0 border-l-[10px] border-r-[10px] border-b-[15px] border-l-transparent border-r-transparent border-b-white"
                 style={{
                   transform: `rotate(${rotation + 180}deg)`, // +180 to point inward toward center
-                  filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))'
+                  filter: 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.8))'
                 }}
               />
-              {/* Flight number and distance label */}
+              {/* Flight number and distance label - larger text */}
               {flight.flight && (
                 <div 
-                  className="absolute text-xs text-white font-semibold whitespace-nowrap text-center"
+                  className="absolute text-sm text-white font-bold whitespace-nowrap text-center"
                   style={{
                     left: '50%',
                     top: '100%',
-                    transform: 'translate(-50%, 4px)',
-                    textShadow: '0 0 4px rgba(0, 0, 0, 0.8)'
+                    transform: 'translate(-50%, 6px)',
+                    textShadow: '0 0 6px rgba(0, 0, 0, 0.9)'
                   }}
                 >
-                  <div>{flight.flight}</div>
-                  <div className="text-white/60 text-xs font-mono">
+                  <div className="text-base">{flight.flight}</div>
+                  <div className="text-white/70 text-sm font-mono">
                     {distanceNM.toFixed(1)}nm
                   </div>
                 </div>
@@ -196,14 +195,14 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
         {/* Loading indicator */}
         {isLoading && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-            <div className="text-white/60 text-sm">Updating...</div>
+            <div className="text-white/60 text-xl font-medium">Updating...</div>
           </div>
         )}
         
         {/* Clear skies message when no flights */}
         {flights.length === 0 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-            <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 text-white/90 text-sm">
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+            <div className="bg-white/10 backdrop-blur-sm rounded-full px-8 py-4 text-white/90 text-xl font-medium">
               Clear skies
             </div>
           </div>
@@ -213,55 +212,40 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
         {selectedFlight && (
           <motion.div
             data-flight-modal="true"
-            className="absolute inset-0 flex items-center justify-center z-50"
+            className="absolute inset-4 flex items-center justify-center z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedFlight(null);
+              setSelectedFlightHex(null);
             }}
           >
             <motion.div
-              className="bg-black/95 backdrop-blur-md rounded-lg p-6 max-w-sm w-full mx-4 border border-white/40"
+              className="bg-black/95 backdrop-blur-md rounded-lg p-6 max-w-sm w-full border border-white/40 flex flex-col justify-center"
               initial={{ scale: 0.8, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 50 }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-white text-lg font-semibold">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-white text-xl font-bold truncate">
                   {selectedFlight.flight || selectedFlight.hex}
                 </h3>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedFlight(null);
+                    setSelectedFlightHex(null);
                   }}
-                  className="text-white/60 hover:text-white text-xl"
+                  className="text-white/60 hover:text-white text-2xl font-bold"
                 >
                   ×
                 </button>
               </div>
 
               {/* Flight Details */}
-              <div className="space-y-3 text-sm">
-                {/* Aircraft Info */}
-                {selectedFlight.t && (
-                  <div className="flex justify-between">
-                    <span className="text-white/70">Aircraft:</span>
-                    <span className="text-white">{selectedFlight.t}</span>
-                  </div>
-                )}
-                
-                {selectedFlight.r && (
-                  <div className="flex justify-between">
-                    <span className="text-white/70">Registration:</span>
-                    <span className="text-white">{selectedFlight.r}</span>
-                  </div>
-                )}
-
+              <div className="space-y-4 text-base">
                 {/* Route Information */}
                 {(() => {
                   const flightInfo = getFlightInfo(selectedFlight);
@@ -269,36 +253,26 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                     return (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Route:</span>
-                          <span className="text-white font-mono">
-                            {flightInfo.origin.iata || flightInfo.origin.icao} → {flightInfo.destination.iata || flightInfo.destination.icao}
+                          <span className="text-white/70">From:</span>
+                          <span className="text-white text-right font-mono">
+                            {flightInfo.origin.iata || flightInfo.origin.icao}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Origin:</span>
-                          <span className="text-white text-xs">
-                            {flightInfo.origin.airport}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Destination:</span>
-                          <span className="text-white text-xs">
-                            {flightInfo.destination.airport}
+                          <span className="text-white/70">To:</span>
+                          <span className="text-white text-right font-mono">
+                            {flightInfo.destination.iata || flightInfo.destination.icao}
                           </span>
                         </div>
                       </>
                     );
                   }
-                  return null;
+                  return (
+                    <div className="text-white/50 text-sm text-center">
+                      Route information unavailable
+                    </div>
+                  );
                 })()}
-
-                {/* Position Info */}
-                <div className="flex justify-between">
-                  <span className="text-white/70">Position:</span>
-                  <span className="text-white text-xs font-mono">
-                    {selectedFlight.lat.toFixed(4)}°, {selectedFlight.lon.toFixed(4)}°
-                  </span>
-                </div>
 
                 {/* Altitude */}
                 {selectedFlight.alt_baro && (
@@ -313,37 +287,6 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
                   <div className="flex justify-between">
                     <span className="text-white/70">Speed:</span>
                     <span className="text-white">{selectedFlight.gs} kts</span>
-                  </div>
-                )}
-
-                {/* Heading */}
-                {selectedFlight.track && (
-                  <div className="flex justify-between">
-                    <span className="text-white/70">Heading:</span>
-                    <span className="text-white">{selectedFlight.track}°</span>
-                  </div>
-                )}
-
-                {/* Squawk */}
-                {selectedFlight.squawk && (
-                  <div className="flex justify-between">
-                    <span className="text-white/70">Squawk:</span>
-                    <span className="text-white font-mono">{selectedFlight.squawk}</span>
-                  </div>
-                )}
-
-                {/* Distance from user */}
-                {userLocation && (
-                  <div className="flex justify-between">
-                    <span className="text-white/70">Distance:</span>
-                    <span className="text-white">
-                      {calculateDistance(
-                        userLocation.latitude,
-                        userLocation.longitude,
-                        selectedFlight.lat,
-                        selectedFlight.lon
-                      ).toFixed(1)} nm
-                    </span>
                   </div>
                 )}
 

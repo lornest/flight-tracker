@@ -11,6 +11,7 @@ interface FlightTrackingClockProps {
     flights: Flight[];
     newFlights: string[];
     newFlightsWithInfo: Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>;
+    allFlightInfo: Map<string, FlightInfo>;
     totalFlights: number;
     lastUpdate: number;
     userLocation: { latitude: number; longitude: number; facingDirection: string } | undefined;

@@ -180,12 +180,8 @@ const SwipeableScreens = ({ userConfig, onSettingsAccess }: SwipeableScreensProp
         {/* Screen 1: Flight Tracking Clock */}
         <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
           {isClockLoading ? (
-            <div className="w-full h-full bg-black flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-round h-round rounded-round border-2 border-white/20 relative mx-auto mb-4 flex items-center justify-center">
-                  <div className="text-white/60 text-sm">Loading FlightClock...</div>
-                </div>
-              </div>
+            <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center mx-auto">
+              <div className="text-white/70 text-2xl font-medium text-center">Loading FlightClock...</div>
             </div>
           ) : (
             <FlightTrackingClock 
@@ -199,12 +195,8 @@ const SwipeableScreens = ({ userConfig, onSettingsAccess }: SwipeableScreensProp
         {/* Screen 2: Flight Radar */}
         <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
           {isRadarLoading ? (
-            <div className="w-full h-full bg-black flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-round h-round rounded-round border-2 border-white/20 relative mx-auto mb-4 flex items-center justify-center">
-                  <div className="text-white/60 text-sm">Loading FlightRadar...</div>
-                </div>
-              </div>
+            <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center mx-auto">
+              <div className="text-white/70 text-2xl font-medium text-center">Loading FlightRadar...</div>
             </div>
           ) : (
             <FlightRadar flightData={flightData} />
@@ -228,7 +220,7 @@ const SwipeableScreens = ({ userConfig, onSettingsAccess }: SwipeableScreensProp
       {/* Settings Hint */}
       {showSettingsHint && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none">
-          <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm font-semibold">
+          <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-8 py-4 text-white text-xl font-bold">
             Hold for Settings
           </div>
         </div>

@@ -19,10 +19,14 @@ export async function GET(request: NextRequest) {
     const adsbData = await fetchFlightsInRadius(lat, lon, radius);
     
     if (!adsbData.aircraft || adsbData.aircraft.length === 0) {
+      const allFlightInfo = flightTracker.getAllFlightInfo();
+      const allFlightInfoObj = Object.fromEntries(allFlightInfo);
+      
       return NextResponse.json({ 
         flights: [], 
         newFlights: [],
         newFlightsWithInfo: [],
+        allFlightInfo: allFlightInfoObj,
         total: 0,
         timestamp: Date.now(),
         lastUpdate: flightTracker.getLastUpdate(),
@@ -42,11 +46,16 @@ export async function GET(request: NextRequest) {
     
     // Get new flights with their information
     const newFlightsWithInfo = flightTracker.getNewFlightsWithInfo();
+    const allFlightInfo = flightTracker.getAllFlightInfo();
+    
+    // Convert Map to plain object for JSON serialization
+    const allFlightInfoObj = Object.fromEntries(allFlightInfo);
     
     return NextResponse.json({
       flights: validFlights,
       newFlights: newFlightIds,
       newFlightsWithInfo: newFlightsWithInfo,
+      allFlightInfo: allFlightInfoObj,
       total: validFlights.length,
       timestamp: Date.now(),
       lastUpdate: flightTracker.getLastUpdate(),

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppConfig } from '@/lib/config';
 
-interface QuickSettingsProps {
+interface SimpleSettingsProps {
   currentConfig: AppConfig;
   onConfigUpdate: (config: Partial<AppConfig>) => void;
   onClose: () => void;
 }
 
-type EditMode = 'menu' | 'location' | 'direction' | 'reset-confirm';
+type EditMode = 'menu' | 'location' | 'direction';
 
-const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettingsProps) => {
+const SimpleSettings = ({ currentConfig, onConfigUpdate, onClose }: SimpleSettingsProps) => {
   const [editMode, setEditMode] = useState<EditMode>('menu');
   const [tempLocation, setTempLocation] = useState({
-    latitude: currentConfig.latitude || parseFloat(process.env.NEXT_PUBLIC_LATITUDE || '0'),
-    longitude: currentConfig.longitude || parseFloat(process.env.NEXT_PUBLIC_LONGITUDE || '0')
+    latitude: currentConfig.latitude || parseFloat(process.env.NEXT_PUBLIC_LATITUDE || '55.979636'),
+    longitude: currentConfig.longitude || parseFloat(process.env.NEXT_PUBLIC_LONGITUDE || '-3.577456')
   });
   const [tempDirection, setTempDirection] = useState(currentConfig.facingDirection);
 
@@ -32,10 +32,10 @@ const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettings
   ];
 
   const presetLocations = [
+    { name: 'Edinburgh', lat: 55.979636, lon: -3.577456 },
     { name: 'London', lat: 51.5074, lon: -0.1278 },
-    { name: 'NYC', lat: 40.7128, lon: -74.0060 },
-    { name: 'Paris', lat: 48.8566, lon: 2.3522 },
-    { name: 'Tokyo', lat: 35.6762, lon: 139.6503 }
+    { name: 'Manchester', lat: 53.4808, lon: -2.2426 },
+    { name: 'Glasgow', lat: 55.8642, lon: -4.2518 }
   ];
 
   const handleLocationSave = () => {
@@ -51,11 +51,6 @@ const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettings
     setEditMode('menu');
   };
 
-  const handleReset = () => {
-    localStorage.removeItem('flight_tracker_config');
-    window.location.reload();
-  };
-
   const renderMenu = () => (
     <div className="text-center space-y-6">
       <div className="space-y-2">
@@ -64,7 +59,7 @@ const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettings
       </div>
 
       {/* Current Settings Cards */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* Location Card */}
         <motion.button
           onClick={() => setEditMode('location')}
@@ -97,17 +92,8 @@ const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettings
         </motion.button>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Button */}
       <div className="space-y-3">
-        <motion.button
-          onClick={() => setEditMode('reset-confirm')}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 py-4 px-6 rounded-lg font-bold text-base transition-colors"
-        >
-          Factory Reset
-        </motion.button>
-
         <motion.button
           onClick={onClose}
           whileHover={{ scale: 1.02 }}
@@ -254,38 +240,6 @@ const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettings
     </div>
   );
 
-  const renderResetConfirm = () => (
-    <div className="text-center space-y-6">
-      <div className="w-20 h-20 mx-auto bg-red-600 rounded-full flex items-center justify-center">
-        <div className="text-white text-3xl">⚠️</div>
-      </div>
-      
-      <div className="space-y-3">
-        <h3 className="text-white text-xl font-bold">Factory Reset?</h3>
-        <p className="text-white/70 text-base">
-          This will erase all settings and restart setup
-        </p>
-      </div>
-
-      <div className="flex space-x-3">
-        <motion.button
-          onClick={() => setEditMode('menu')}
-          whileTap={{ scale: 0.95 }}
-          className="flex-1 bg-white/10 hover:bg-white/20 text-white py-4 px-4 rounded-lg transition-colors text-base font-medium"
-        >
-          Cancel
-        </motion.button>
-        <motion.button
-          onClick={handleReset}
-          whileTap={{ scale: 0.95 }}
-          className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 px-4 rounded-lg transition-colors text-base font-bold"
-        >
-          Reset
-        </motion.button>
-      </div>
-    </div>
-  );
-
   const renderCurrentMode = () => {
     switch (editMode) {
       case 'menu':
@@ -294,8 +248,6 @@ const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettings
         return renderLocationEdit();
       case 'direction':
         return renderDirectionEdit();
-      case 'reset-confirm':
-        return renderResetConfirm();
       default:
         return renderMenu();
     }
@@ -322,4 +274,4 @@ const QuickSettings = ({ currentConfig, onConfigUpdate, onClose }: QuickSettings
   );
 };
 
-export default QuickSettings;
+export default SimpleSettings;
