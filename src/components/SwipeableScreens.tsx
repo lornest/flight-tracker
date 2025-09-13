@@ -221,7 +221,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         }}
       >
         {/* Screen 1: Flight Tracking Clock */}
-        <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
+        <div className="h-full flex-shrink-0 top-2 relative" style={{ width: '50%' }}>
           {isClockLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
               <div className="text-white/70 text-2xl font-medium text-center">Loading FlightClock...</div>
@@ -236,7 +236,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         </div>
         
         {/* Screen 2: Flight Radar */}
-        <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
+        <div className="h-full flex-shrink-0 top-2 relative" style={{ width: '50%' }}>
           {isRadarLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
               <div className="text-white/70 text-2xl font-medium text-center">Loading FlightRadar...</div>
@@ -247,35 +247,10 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         </div>
       </motion.div>
       
-      {/* Positioning markers for debugging */}
-      <div className="absolute top-0 left-0 z-40 pointer-events-none">
-        {/* Center vertical reference line (orange = center) */}
-        <div className="absolute top-0 left-80 w-1 h-16 bg-orange-500 opacity-70"></div>
-        
-        {/* Centered horizontal lines at different vertical offsets */}
-        <div className="absolute top-2 left-80 w-16 h-1 bg-red-500 opacity-70 transform -translate-x-1/2"></div>
-        <div className="absolute top-4 left-80 w-16 h-1 bg-orange-500 opacity-70 transform -translate-x-1/2"></div>
-        <div className="absolute top-6 left-80 w-16 h-1 bg-yellow-500 opacity-70 transform -translate-x-1/2"></div>
-        <div className="absolute top-8 left-80 w-16 h-1 bg-green-500 opacity-70 transform -translate-x-1/2"></div>
-        <div className="absolute top-10 left-80 w-16 h-1 bg-blue-500 opacity-70 transform -translate-x-1/2"></div>
-        <div className="absolute top-12 left-80 w-16 h-1 bg-purple-500 opacity-70 transform -translate-x-1/2"></div>
-        
-        {/* Test circles at different offsets to see which fits best */}
-        <div className="absolute top-2 left-80 w-96 h-96 rounded-full border-2 border-red-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute top-4 left-80 w-96 h-96 rounded-full border-2 border-orange-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute top-6 left-80 w-96 h-96 rounded-full border-2 border-yellow-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute top-8 left-80 w-96 h-96 rounded-full border-2 border-green-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute top-10 left-80 w-96 h-96 rounded-full border-2 border-blue-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute top-12 left-80 w-96 h-96 rounded-full border-2 border-purple-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
-        
-        {/* Corner reference */}
-        <div className="absolute top-0 left-0 w-4 h-4 bg-white opacity-50"></div>
-      </div>
-      
       {/* Direction Selector Modal */}
       {showDirectionSelector && (
         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm">
-          <div className="w-round h-round rounded-round bg-black/95 border-2 border-white/20 flex items-center justify-center relative">
+          <div className="w-round h-round rounded-round bg-black/95 border-2 border-white/20 flex items-center justify-center relative top-2">
 
             {/* Direction selector */}
             <div className="text-center">
