@@ -248,39 +248,30 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
       {showDirectionSelector && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="w-round h-round rounded-round bg-black/95 border-2 border-white/20 flex items-center justify-center relative">
-            {/* Close button */}
-            <button
-              onClick={() => setShowDirectionSelector(false)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
-            >
-              <span className="text-white/70 text-2xl font-bold">×</span>
-            </button>
 
             {/* Direction selector */}
             <div className="text-center">
-              <h3 className="text-white text-2xl font-bold mb-6">Facing Direction</h3>
-              
-              <div className="relative w-80 h-80">
+              <div className="relative w-[420px] h-[420px]">
                 {/* Center circle */}
                 <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
                 
                 {directions.map((dir) => {
                   const angle = (dir.angle - 90) * (Math.PI / 180);
-                  const x = Math.cos(angle) * 120;
-                  const y = Math.sin(angle) * 120;
+                  const x = Math.cos(angle) * 175;
+                  const y = Math.sin(angle) * 175;
                   
                   return (
                     <button
                       key={dir.value}
                       onClick={() => handleDirectionSelect(dir.value)}
-                      className={`absolute w-16 h-16 rounded-full border-2 flex items-center justify-center font-bold text-lg transition-all ${
+                      className={`absolute w-24 h-24 rounded-full border-2 flex items-center justify-center font-bold text-2xl transition-all ${
                         userConfig.facingDirection === dir.value
                           ? 'bg-blue-600 border-blue-400 text-white scale-110 shadow-lg'
-                          : 'bg-white/10 border-white/30 text-white/90 hover:border-white/50 hover:bg-white/20 hover:shadow-md'
+                          : 'bg-black/90 border-white/50 text-white hover:border-white/70 hover:bg-black/95 hover:shadow-md'
                       }`}
                       style={{
-                        left: `calc(50% + ${x}px - 32px)`,
-                        top: `calc(50% + ${y}px - 32px)`
+                        left: `calc(50% + ${x}px - 48px)`,
+                        top: `calc(50% + ${y}px - 48px)`
                       }}
                     >
                       {dir.value}
@@ -288,13 +279,14 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
                   );
                 })}
                 
-                {/* Center dot */}
-                <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white/40 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                {/* Center close button */}
+                <button
+                  onClick={() => setShowDirectionSelector(false)}
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                >
+                  <span className="text-white/70 text-4xl font-bold">×</span>
+                </button>
               </div>
-
-              <p className="text-white/70 text-lg mt-6">
-                Current: {userConfig.facingDirection}
-              </p>
             </div>
           </div>
         </div>
