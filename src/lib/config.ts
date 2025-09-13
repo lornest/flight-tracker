@@ -4,14 +4,12 @@ export interface AppConfig {
   latitude: number;
   longitude: number;
   facingDirection: string;
-  isSetupComplete: boolean;
 }
 
 const DEFAULT_CONFIG: AppConfig = {
-  latitude: 0,
-  longitude: 0,
-  facingDirection: 'N',
-  isSetupComplete: false
+  latitude: parseFloat(process.env.NEXT_PUBLIC_LATITUDE || '55.979636'),
+  longitude: parseFloat(process.env.NEXT_PUBLIC_LONGITUDE || '-3.577456'),
+  facingDirection: process.env.NEXT_PUBLIC_FACING_DIRECTION || 'N'
 };
 
 const CONFIG_KEY = 'flight_tracker_config';
@@ -44,26 +42,5 @@ export const saveConfig = (config: Partial<AppConfig>): void => {
     localStorage.setItem(CONFIG_KEY, JSON.stringify(newConfig));
   } catch (error) {
     console.error('Error saving config:', error);
-  }
-};
-
-export const isFirstTimeSetup = (): boolean => {
-  const config = getConfig();
-  return !config.isSetupComplete;
-};
-
-export const markSetupComplete = (): void => {
-  saveConfig({ isSetupComplete: true });
-};
-
-export const resetConfig = (): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  
-  try {
-    localStorage.removeItem(CONFIG_KEY);
-  } catch (error) {
-    console.error('Error resetting config:', error);
   }
 };

@@ -20,9 +20,14 @@ interface FlightRadarProps {
     clearNewFlightAlert: () => void;
     refetch: () => Promise<void>;
   };
+  userConfig: {
+    latitude: number;
+    longitude: number;
+    facingDirection: string;
+  };
 }
 
-const FlightRadar = ({ flightData }: FlightRadarProps) => {
+const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
   const {
     flights,
     newFlightsWithInfo,
@@ -88,23 +93,28 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
         <div className="absolute w-2 h-2 bg-white rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"></div>
         
         {/* Facing direction indicator */}
-        {userLocation && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="bg-blue-600/80 backdrop-blur-sm rounded-lg px-8 py-4 text-white text-xl font-bold border border-white/20">
-              ↑ {userLocation.facingDirection}
-            </div>
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-blue-600/80 backdrop-blur-sm rounded-lg px-8 py-4 text-white text-xl font-bold border border-white/20">
+            ↑ {userConfig.facingDirection}
           </div>
-        )}
+        </div>
         
         {/* Flight beacons */}
         {userLocation && flights && flights.map((flight) => {
           // Skip flights without valid coordinates
           if (!flight.lat || !flight.lon) return null;
           
+          // Use coordinates from userLocation but facing direction from userConfig
+          const currentLocation = {
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+            facingDirection: userConfig.facingDirection
+          };
+          
           // Calculate distance from user location to aircraft
           const distanceNM = calculateDistance(
-            userLocation.latitude,
-            userLocation.longitude,
+            currentLocation.latitude,
+            currentLocation.longitude,
             flight.lat,
             flight.lon
           );
@@ -116,11 +126,11 @@ const FlightRadar = ({ flightData }: FlightRadarProps) => {
           if (distanceNM > maxRadiusNM) return null;
           
           const rotation = calculatePlaneRotation(
-            userLocation.latitude,
-            userLocation.longitude,
+            currentLocation.latitude,
+            currentLocation.longitude,
             flight.lat,
             flight.lon,
-            userLocation.facingDirection
+            currentLocation.facingDirection
           );
           
           // Calculate position on the radar circle based on actual distance

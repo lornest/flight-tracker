@@ -1,15 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import SimpleSettings from '@/components/SimpleSettings';
+import SwipeableScreens from '@/components/SwipeableScreens';
 import type { AppConfig } from '@/lib/config';
 
 export default function TestSettingsPage() {
   const [config, setConfig] = useState<AppConfig>({
     latitude: 55.979636,
     longitude: -3.577456,
-    facingDirection: 'N',
-    isSetupComplete: true
+    facingDirection: 'N'
   });
 
   const handleConfigUpdate = (newConfig: Partial<AppConfig>) => {
@@ -17,17 +16,21 @@ export default function TestSettingsPage() {
     console.log('Config updated:', newConfig);
   };
 
-  const handleClose = () => {
-    console.log('Settings closed');
-  };
-
   return (
-    <div className="w-full h-screen">
-      <SimpleSettings
-        currentConfig={config}
+    <div className="w-full h-screen relative">
+      <SwipeableScreens
+        userConfig={config}
         onConfigUpdate={handleConfigUpdate}
-        onClose={handleClose}
       />
+      
+      {/* Test Info */}
+      <div className="absolute top-4 left-4 z-40 bg-black/80 backdrop-blur-sm rounded-lg p-4">
+        <div className="text-white text-sm space-y-2">
+          <div className="font-bold mb-2">Settings Test</div>
+          <div>Double-tap center for direction settings</div>
+          <div>Current: {config.facingDirection}</div>
+        </div>
+      </div>
     </div>
   );
 }
