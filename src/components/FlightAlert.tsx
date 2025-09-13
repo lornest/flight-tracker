@@ -90,21 +90,6 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        {/* Animated plane icon */}
-        <motion.div
-          className="mb-6"
-          animate={{ 
-            y: [0, -10, 0],
-            rotate: [0, 5, 0, -5, 0]
-          }}
-          transition={{ 
-            duration: 4, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-        >
-          <Plane className="w-20 h-20 text-white mx-auto" />
-        </motion.div>
 
         {/* Real-time beacons for all current flights */}
         {userLocation && allFlights && allFlights.slice(0, 8).map((flight, index) => {
@@ -190,7 +175,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
         </motion.h1>
         
         {/* Flight details */}
-        {preservedFlightInfo && preservedFlightInfo.length > 0 ? (
+        {preservedFlightInfo && preservedFlightInfo.length > 0 && (
           <motion.div
             className="space-y-3 mb-4"
             initial={{ opacity: 0 }}
@@ -269,29 +254,7 @@ const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, a
               </motion.div>
             )}
           </motion.div>
-        ) : (
-          <motion.p
-            className="text-white/70 text-2xl mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-          >
-            {newFlights.length === 1 
-              ? 'Aircraft entered your area'
-              : `${newFlights.length} aircraft entered your area`
-            }
-          </motion.p>
         )}
-
-        {/* Flight count */}
-        <motion.div
-          className="bg-white/10 backdrop-blur-sm rounded-full px-8 py-3 text-white/90 text-xl"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.9 }}
-        >
-          {flightCount} flight{flightCount !== 1 ? 's' : ''} in area
-        </motion.div>
       </motion.div>
 
       {/* Pulsing ring animation */}

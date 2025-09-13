@@ -255,7 +255,7 @@ const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
               </div>
 
               {/* Flight Details */}
-              <div className="space-y-4 text-base">
+              <div className="space-y-2 text-lg">
                 {/* Route Information */}
                 {(() => {
                   const flightInfo = getFlightInfo(selectedFlight);
@@ -265,13 +265,13 @@ const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
                         <div className="flex justify-between">
                           <span className="text-white/70">From:</span>
                           <span className="text-white text-right font-mono">
-                            {flightInfo.origin.iata || flightInfo.origin.icao}
+                            {flightInfo.origin.airport || flightInfo.origin.iata}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-white/70">To:</span>
                           <span className="text-white text-right font-mono">
-                            {flightInfo.destination.iata || flightInfo.destination.icao}
+                            {flightInfo.destination.airport || flightInfo.destination.iata}
                           </span>
                         </div>
                       </>
