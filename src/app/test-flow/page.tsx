@@ -27,7 +27,8 @@ export default function TestFlowPage() {
       <div className="absolute top-4 left-4 z-40 bg-black/80 backdrop-blur-sm rounded-lg p-4">
         <div className="text-white text-sm space-y-2">
           <div className="font-bold mb-2">Test Mode</div>
-          <div>Double-tap center to change facing direction</div>
+          <div>Double-tap center: facing direction</div>
+          <div>Double-tap left/right: change screen</div>
           <div>Current: {config.facingDirection}</div>
         </div>
       </div>

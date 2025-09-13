@@ -25,9 +25,10 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
   const containerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
   
-  // Double-tap detection for facing direction settings
+  // Double-tap detection for facing direction settings and navigation
   const [showDirectionSelector, setShowDirectionSelector] = useState(false);
   const lastTapRef = useRef<number>(0);
+  const lastTapLocationRef = useRef<{ x: number; y: number } | null>(null);
   const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Add delay when switching screens to prevent API rate limiting
@@ -121,7 +122,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
     const screenWidth = rect.width;
     const screenHeight = rect.height;
     
-    // Check if tap is in center area for double-tap detection
+    // Check if tap is in center area for facing direction settings
     const centerX = screenWidth / 2;
     const centerY = screenHeight / 2;
     const centerRadius = Math.min(screenWidth, screenHeight) * 0.15; // 15% of screen size
@@ -130,36 +131,47 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
       Math.pow(relativeX - centerX, 2) + Math.pow(relativeY - centerY, 2)
     );
     
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+    const lastLocation = lastTapLocationRef.current;
+    
+    // Check if this tap is in roughly the same location as the last tap (within 50px)
+    const isSameLocation = lastLocation && 
+      Math.abs(relativeX - lastLocation.x) < 50 && 
+      Math.abs(relativeY - lastLocation.y) < 50;
+    
     if (distanceFromCenter <= centerRadius) {
-      // Center tap - check for double-tap
-      const now = Date.now();
-      const timeSinceLastTap = now - lastTapRef.current;
-      
-      if (timeSinceLastTap < 500 && timeSinceLastTap > 50) {
-        // Double-tap detected
+      // Center tap - check for double-tap for facing direction
+      if (timeSinceLastTap < 500 && timeSinceLastTap > 50 && isSameLocation) {
+        // Double-tap detected in center
         setShowDirectionSelector(true);
         if (tapTimeoutRef.current) {
           clearTimeout(tapTimeoutRef.current);
         }
         return;
       }
-      
-      lastTapRef.current = now;
-      return;
+    } else {
+      // Outside center - check for double-tap for navigation
+      if (timeSinceLastTap < 500 && timeSinceLastTap > 50 && isSameLocation) {
+        // Double-tap detected outside center - navigate screens
+        if (relativeX < screenWidth / 2) {
+          // Left side double-tapped - go back
+          if (currentScreen === 1) {
+            setCurrentScreen(0);
+          }
+        } else {
+          // Right side double-tapped - go forward  
+          if (currentScreen === 0) {
+            setCurrentScreen(1);
+          }
+        }
+        return;
+      }
     }
     
-    // Left half goes back, right half goes forward
-    if (relativeX < screenWidth / 2) {
-      // Left side touched - go back
-      if (currentScreen === 1) {
-        setCurrentScreen(0);
-      }
-    } else {
-      // Right side touched - go forward  
-      if (currentScreen === 0) {
-        setCurrentScreen(1);
-      }
-    }
+    // Store tap location and time for next tap comparison
+    lastTapRef.current = now;
+    lastTapLocationRef.current = { x: relativeX, y: relativeY };
   };
 
   // Direction selection handler
