@@ -119,29 +119,15 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
     
     const relativeX = clientX - rect.left;
     const relativeY = clientY - rect.top;
-    
-    // For a Pi with round display, we expect the display to be 480x480 centered on screen
-    // If the screen is wider than 480px, we need to account for the centering offset
     const screenWidth = rect.width;
     const screenHeight = rect.height;
-    const displaySize = 480; // Round display size
     
-    // Calculate the actual center of the round display
-    let centerX, effectiveWidth;
-    
-    if (screenWidth > displaySize) {
-      // Display is centered horizontally
-      const offsetX = (screenWidth - displaySize) / 2;
-      centerX = offsetX + displaySize / 2;
-      effectiveWidth = displaySize;
-    } else {
-      // Display fills the screen
-      centerX = screenWidth / 2;
-      effectiveWidth = screenWidth;
-    }
-    
-    const centerY = screenHeight / 2; // Assume height is always correct
-    const centerRadius = Math.min(effectiveWidth, screenHeight) * 0.15; // 15% of effective display size
+    // Simple top-left positioning - components are positioned at top-left of their areas
+    // For touch detection, use the round display area (480x480) in top-left
+    const displaySize = 480;
+    const centerX = Math.min(displaySize, screenWidth) / 2;
+    const centerY = Math.min(displaySize, screenHeight) / 2;
+    const centerRadius = Math.min(displaySize, screenWidth, screenHeight) * 0.15;
     
     const distanceFromCenter = Math.sqrt(
       Math.pow(relativeX - centerX, 2) + Math.pow(relativeY - centerY, 2)
@@ -235,7 +221,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         }}
       >
         {/* Screen 1: Flight Tracking Clock */}
-        <div className="h-full flex-shrink-0 relative flex items-center justify-center" style={{ width: '50%' }}>
+        <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
           {isClockLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
               <div className="text-white/70 text-2xl font-medium text-center">Loading FlightClock...</div>
@@ -250,7 +236,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         </div>
         
         {/* Screen 2: Flight Radar */}
-        <div className="h-full flex-shrink-0 relative flex items-center justify-center" style={{ width: '50%' }}>
+        <div className="h-full flex-shrink-0" style={{ width: '50%' }}>
           {isRadarLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
               <div className="text-white/70 text-2xl font-medium text-center">Loading FlightRadar...</div>
@@ -263,7 +249,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
       
       {/* Direction Selector Modal */}
       {showDirectionSelector && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm">
           <div className="w-round h-round rounded-round bg-black/95 border-2 border-white/20 flex items-center justify-center relative">
 
             {/* Direction selector */}
