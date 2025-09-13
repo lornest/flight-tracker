@@ -247,6 +247,25 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         </div>
       </motion.div>
       
+      {/* Positioning markers for debugging */}
+      <div className="absolute top-0 left-0 z-40 pointer-events-none">
+        {/* Top edge markers */}
+        <div className="absolute top-0 left-60 w-1 h-8 bg-red-500 opacity-50"></div>
+        <div className="absolute top-0 left-80 w-1 h-8 bg-orange-500 opacity-50"></div>
+        <div className="absolute top-0 left-100 w-1 h-8 bg-yellow-500 opacity-50"></div>
+        
+        {/* Offset markers - different vertical positions */}
+        <div className="absolute top-2 left-40 w-8 h-1 bg-red-500 opacity-50"></div>
+        <div className="absolute top-4 left-40 w-8 h-1 bg-orange-500 opacity-50"></div>
+        <div className="absolute top-6 left-40 w-8 h-1 bg-yellow-500 opacity-50"></div>
+        <div className="absolute top-8 left-40 w-8 h-1 bg-green-500 opacity-50"></div>
+        <div className="absolute top-10 left-40 w-8 h-1 bg-blue-500 opacity-50"></div>
+        <div className="absolute top-12 left-40 w-8 h-1 bg-purple-500 opacity-50"></div>
+        
+        {/* Corner reference */}
+        <div className="absolute top-0 left-0 w-4 h-4 bg-white opacity-50"></div>
+      </div>
+      
       {/* Direction Selector Modal */}
       {showDirectionSelector && (
         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm">
