@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plane, X, MapPin } from 'lucide-react';
+import { X, MapPin } from 'lucide-react';
 import { Flight, FlightInfo } from '@/types/flight';
 import { calculatePlaneRotation, getRelativeDirection } from '@/lib/utils/bearing';
 
@@ -20,7 +20,7 @@ interface FlightAlertProps {
   onDismiss: () => void;
 }
 
-const FlightAlert = ({ isVisible, flightCount, newFlights, newFlightsWithInfo, allFlights, userLocation, onDismiss }: FlightAlertProps) => {
+const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, userLocation, onDismiss }: FlightAlertProps) => {
   // Preserve flight info during the alert period to prevent loss of route information
   const [preservedFlightInfo, setPreservedFlightInfo] = useState<Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>>([]);
   

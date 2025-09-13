@@ -127,7 +127,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
     const displaySize = 480; // Round display size
     
     // Calculate the actual center of the round display
-    let centerX, centerY, effectiveWidth;
+    let centerX, effectiveWidth;
     
     if (screenWidth > displaySize) {
       // Display is centered horizontally
@@ -140,7 +140,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
       effectiveWidth = screenWidth;
     }
     
-    centerY = screenHeight / 2; // Assume height is always correct
+    const centerY = screenHeight / 2; // Assume height is always correct
     const centerRadius = Math.min(effectiveWidth, screenHeight) * 0.15; // 15% of effective display size
     
     const distanceFromCenter = Math.sqrt(
@@ -198,9 +198,10 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
 
   // Clean up tap timeout on unmount
   useEffect(() => {
+    const currentTimeout = tapTimeoutRef.current;
     return () => {
-      if (tapTimeoutRef.current) {
-        clearTimeout(tapTimeoutRef.current);
+      if (currentTimeout) {
+        clearTimeout(currentTimeout);
       }
     };
   }, []);
