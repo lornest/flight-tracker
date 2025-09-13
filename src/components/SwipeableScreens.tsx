@@ -249,18 +249,24 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
       
       {/* Positioning markers for debugging */}
       <div className="absolute top-0 left-0 z-40 pointer-events-none">
-        {/* Top edge markers */}
-        <div className="absolute top-0 left-60 w-1 h-8 bg-red-500 opacity-50"></div>
-        <div className="absolute top-0 left-80 w-1 h-8 bg-orange-500 opacity-50"></div>
-        <div className="absolute top-0 left-100 w-1 h-8 bg-yellow-500 opacity-50"></div>
+        {/* Center vertical reference line (orange = center) */}
+        <div className="absolute top-0 left-80 w-1 h-16 bg-orange-500 opacity-70"></div>
         
-        {/* Offset markers - different vertical positions */}
-        <div className="absolute top-2 left-40 w-8 h-1 bg-red-500 opacity-50"></div>
-        <div className="absolute top-4 left-40 w-8 h-1 bg-orange-500 opacity-50"></div>
-        <div className="absolute top-6 left-40 w-8 h-1 bg-yellow-500 opacity-50"></div>
-        <div className="absolute top-8 left-40 w-8 h-1 bg-green-500 opacity-50"></div>
-        <div className="absolute top-10 left-40 w-8 h-1 bg-blue-500 opacity-50"></div>
-        <div className="absolute top-12 left-40 w-8 h-1 bg-purple-500 opacity-50"></div>
+        {/* Centered horizontal lines at different vertical offsets */}
+        <div className="absolute top-2 left-80 w-16 h-1 bg-red-500 opacity-70 transform -translate-x-1/2"></div>
+        <div className="absolute top-4 left-80 w-16 h-1 bg-orange-500 opacity-70 transform -translate-x-1/2"></div>
+        <div className="absolute top-6 left-80 w-16 h-1 bg-yellow-500 opacity-70 transform -translate-x-1/2"></div>
+        <div className="absolute top-8 left-80 w-16 h-1 bg-green-500 opacity-70 transform -translate-x-1/2"></div>
+        <div className="absolute top-10 left-80 w-16 h-1 bg-blue-500 opacity-70 transform -translate-x-1/2"></div>
+        <div className="absolute top-12 left-80 w-16 h-1 bg-purple-500 opacity-70 transform -translate-x-1/2"></div>
+        
+        {/* Test circles at different offsets to see which fits best */}
+        <div className="absolute top-2 left-80 w-96 h-96 rounded-full border-2 border-red-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-4 left-80 w-96 h-96 rounded-full border-2 border-orange-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-6 left-80 w-96 h-96 rounded-full border-2 border-yellow-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-8 left-80 w-96 h-96 rounded-full border-2 border-green-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-10 left-80 w-96 h-96 rounded-full border-2 border-blue-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-12 left-80 w-96 h-96 rounded-full border-2 border-purple-500 opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
         
         {/* Corner reference */}
         <div className="absolute top-0 left-0 w-4 h-4 bg-white opacity-50"></div>
