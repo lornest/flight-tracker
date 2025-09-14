@@ -59,15 +59,23 @@ const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-center gap-3 text-white/90 text-lg font-medium">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 text-white/90 text-lg font-medium">
         <div className="text-center">
-          <div>{originData.location}</div>
-          <div className="text-white/60 text-sm font-normal">{originData.name}</div>
+          <div className="mb-1">{originData.location}</div>
+          <div className="text-white/60 text-sm font-normal leading-tight break-words">
+            {originData.name}
+          </div>
         </div>
-        <span className="text-white/70">→</span>
+        
+        <div className="flex items-center justify-center pt-1">
+          <span className="text-white/70">→</span>
+        </div>
+        
         <div className="text-center">
-          <div>{destData.location}</div>
-          <div className="text-white/60 text-sm font-normal">{destData.name}</div>
+          <div className="mb-1">{destData.location}</div>
+          <div className="text-white/60 text-sm font-normal leading-tight break-words">
+            {destData.name}
+          </div>
         </div>
       </div>
     </div>
