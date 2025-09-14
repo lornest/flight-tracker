@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Flight, FlightInfo } from '@/types/flight';
-import { calculatePlaneRotation } from '@/lib/utils/bearing';
+import { calculatePlaneRotation, calculateDistance } from '@/lib/utils/bearing';
 import { getAirportData } from '@/lib/utils/airport';
 
 // Route display component with airport data fetching
@@ -43,7 +43,7 @@ const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
 
   if (loading) {
     return (
-      <div className="text-white/50 text-sm text-center animate-pulse">
+      <div className="text-white/50 text-lg text-center animate-pulse">
         Loading route...
       </div>
     );
@@ -51,7 +51,7 @@ const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
 
   if (!originData || !destData) {
     return (
-      <div className="text-white/50 text-sm text-center">
+      <div className="text-white/50 text-lg text-center">
         Route information unavailable
       </div>
     );
@@ -59,21 +59,21 @@ const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 text-white/90 text-lg font-medium">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 text-white/90 text-3xl font-medium">
         <div className="text-center">
           <div className="mb-1">{originData.location}</div>
-          <div className="text-white/60 text-sm font-normal leading-tight break-words">
+          <div className="text-white/60 text-xl font-normal leading-tight break-words">
             {originData.name}
           </div>
         </div>
         
         <div className="flex items-center justify-center pt-1">
-          <span className="text-white/70">→</span>
+          <span className="text-white/70 text-2xl">→</span>
         </div>
         
         <div className="text-center">
           <div className="mb-1">{destData.location}</div>
-          <div className="text-white/60 text-sm font-normal leading-tight break-words">
+          <div className="text-white/60 text-xl font-normal leading-tight break-words">
             {destData.name}
           </div>
         </div>
@@ -172,6 +172,17 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
           // Skip flights without valid coordinates
           if (!flight.lat || !flight.lon) return null;
           
+          // Calculate distance from user location to aircraft
+          const distanceNM = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            flight.lat,
+            flight.lon
+          );
+          
+          // Get the maximum radius from environment variable (default 10 NM)
+          const maxRadiusNM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
+          
           const rotation = calculatePlaneRotation(
             userLocation.latitude,
             userLocation.longitude,
@@ -180,11 +191,15 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
             userLocation.facingDirection
           );
           
-          // Calculate position on the clock face (radius from center to edge)
-          const radius = 180;
+          // Calculate position based on actual distance (matching FlightRadar logic)
+          // Use same radius as FlightRadar so distances match between screens
+          const maxScreenRadius = 240 * 0.85; // Same as FlightRadar: 85% of full radius
+          const distanceRatio = Math.min(distanceNM / maxRadiusNM, 1); // Cap at 1.0
+          const screenRadius = distanceRatio * maxScreenRadius;
+          
           const angleRad = (rotation - 90) * (Math.PI / 180); // -90 to make 0° point up
-          const x = Math.cos(angleRad) * radius;
-          const y = Math.sin(angleRad) * radius;
+          const x = Math.cos(angleRad) * screenRadius;
+          const y = Math.sin(angleRad) * screenRadius;
           
           // Determine if this is a new flight for highlighting
           const isNewFlight = newFlights.includes(flight.hex);
@@ -269,7 +284,7 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
                 >
                   {/* Flight number */}
                   {flightData.flight.flight && (
-                    <div className="text-white font-semibold text-2xl mb-3">
+                    <div className="text-white font-semibold text-4xl mb-3">
                       {flightData.flight.flight}
                     </div>
                   )}

@@ -224,7 +224,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         <div className="h-full flex-shrink-0 top-2 relative" style={{ width: '50%' }}>
           {isClockLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
-              <div className="text-white/70 text-2xl font-medium text-center">Loading FlightClock...</div>
+              <div className="text-white/70 text-6xl font-medium text-center">Loading FlightClock...</div>
             </div>
           ) : (
             <FlightTrackingClock 
@@ -239,7 +239,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         <div className="h-full flex-shrink-0 top-2 relative" style={{ width: '50%' }}>
           {isRadarLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
-              <div className="text-white/70 text-2xl font-medium text-center">Loading FlightRadar...</div>
+              <div className="text-white/70 text-6xl font-medium text-center">Loading FlightRadar...</div>
             </div>
           ) : (
             <FlightRadar flightData={flightData} userConfig={userConfig} />

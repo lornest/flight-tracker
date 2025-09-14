@@ -255,7 +255,7 @@ const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
               </div>
 
               {/* Flight Details */}
-              <div className="space-y-2 text-lg">
+              <div className="space-y-2 text-xl">
                 {/* Route Information */}
                 {(() => {
                   const flightInfo = getFlightInfo(selectedFlight);
@@ -278,7 +278,7 @@ const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
                     );
                   }
                   return (
-                    <div className="text-white/50 text-sm text-center">
+                    <div className="text-white/50 text-lg text-center">
                       Route information unavailable
                     </div>
                   );
