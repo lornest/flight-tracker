@@ -25,14 +25,12 @@ const AppWrapper = () => {
     setConfig(updatedConfig);
   };
 
-  // Loading screen
+  // Starting screen
   if (isLoading) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-round h-round rounded-round border-2 border-white/20 relative mx-auto mb-4 flex items-center justify-center">
-            <div className="text-white/60 text-2xl">Loading...</div>
-          </div>
+      <div className="w-full h-full bg-black">
+        <div className="w-round h-round rounded-round border-2 border-white/20 flex items-center justify-center top-2 relative">
+          <div className="text-white/60 text-2xl">Starting up...</div>
         </div>
       </div>
     );

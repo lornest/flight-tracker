@@ -77,7 +77,7 @@ const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
           return (
             <div
               key={ratio}
-              className="absolute rounded-full border border-white/10"
+              className="absolute rounded-full border border-white/20"
               style={{
                 width: `${ringRadius * 2}px`,
                 height: `${ringRadius * 2}px`,

@@ -2,9 +2,77 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, MapPin } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Flight, FlightInfo } from '@/types/flight';
-import { calculatePlaneRotation, getRelativeDirection } from '@/lib/utils/bearing';
+import { calculatePlaneRotation } from '@/lib/utils/bearing';
+import { getAirportData } from '@/lib/utils/airport';
+
+// Route display component with airport data fetching
+const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
+  const [originData, setOriginData] = useState<{ location: string; name: string } | null>(null);
+  const [destData, setDestData] = useState<{ location: string; name: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAirportData = async () => {
+      setLoading(true);
+      
+      console.log('RouteDisplay - flightInfo:', flightInfo); // Debug log
+      
+      // Fetch origin airport data
+      const originIcao = flightInfo.origin?.icao;
+      if (originIcao) {
+        console.log('Fetching origin airport data for:', originIcao);
+        const originAirport = await getAirportData(originIcao);
+        setOriginData(originAirport ? { location: originAirport.location, name: originAirport.name } : null);
+      }
+      
+      // Fetch destination airport data
+      const destIcao = flightInfo.destination?.icao;
+      if (destIcao) {
+        console.log('Fetching destination airport data for:', destIcao);
+        const destAirport = await getAirportData(destIcao);
+        setDestData(destAirport ? { location: destAirport.location, name: destAirport.name } : null);
+      }
+      
+      setLoading(false);
+    };
+
+    fetchAirportData();
+  }, [flightInfo]);
+
+  if (loading) {
+    return (
+      <div className="text-white/50 text-sm text-center animate-pulse">
+        Loading route...
+      </div>
+    );
+  }
+
+  if (!originData || !destData) {
+    return (
+      <div className="text-white/50 text-sm text-center">
+        Route information unavailable
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-center gap-3 text-white/90 text-lg font-medium">
+        <div className="text-center">
+          <div>{originData.location}</div>
+          <div className="text-white/60 text-sm font-normal">{originData.name}</div>
+        </div>
+        <span className="text-white/70">→</span>
+        <div className="text-center">
+          <div>{destData.location}</div>
+          <div className="text-white/60 text-sm font-normal">{destData.name}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface FlightAlertProps {
   isVisible: boolean;
@@ -165,14 +233,14 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
         })}
 
         {/* Alert text */}
-        <motion.h1
-          className="text-5xl font-light text-white mb-4"
+        {/* <motion.h1
+          className="text-4xl font-light text-white mb-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
           New Flight!
-        </motion.h1>
+        </motion.h1> */}
         
         {/* Flight details */}
         {preservedFlightInfo && preservedFlightInfo.length > 0 && (
@@ -183,17 +251,6 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
             transition={{ delay: 0.7 }}
           >
             {preservedFlightInfo.slice(0, 2).map((flightData, index) => {
-              // Get relative direction description
-              const relativeDirection = userLocation 
-                ? getRelativeDirection(
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    flightData.flight.lat || 0,
-                    flightData.flight.lon || 0,
-                    userLocation.facingDirection
-                  )
-                : "nearby";
-
               return (
                 <motion.div
                   key={flightData.hexCode}
@@ -209,31 +266,10 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
                     </div>
                   )}
                   
-                  {/* Direction indicator */}
-                  <div className="text-white/60 text-base mb-3 italic">
-                    Look {relativeDirection}
-                  </div>
                 
                 {/* Route information */}
                 {flightData.info ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-center gap-3 text-white/80 text-lg">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-5 h-5" />
-                        <span>{flightData.info.origin?.airport || flightData.info.origin?.iata || 'Unknown'}</span>
-                      </div>
-                      <span>→</span>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-5 h-5" />
-                        <span>{flightData.info.destination?.airport || flightData.info.destination?.iata || 'Unknown'}</span>
-                      </div>
-                    </div>
-                    {flightData.info.route && (
-                      <div className="text-white/60 text-base">
-                        {flightData.info.route}
-                      </div>
-                    )}
-                  </div>
+                  <RouteDisplay flightInfo={flightData.info} />
                 ) : (
                   <div className="text-white/60 text-base">
                     Aircraft: {flightData.flight.type || 'Unknown'}
