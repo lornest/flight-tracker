@@ -37,7 +37,7 @@ const AppWrapper = () => {
   if (isLoading) {
     return (
       <div className="w-full h-full bg-black">
-        <div className="w-round h-round rounded-round border-2 border-white/20 flex items-center justify-center top-2 relative overflow-hidden">
+        <div className="w-round h-round rounded-round border-2 border-white/20 flex items-center justify-center top-[6px] relative overflow-hidden">
           
           {/* Animated plane flying from off-screen left to off-screen right */}
           <motion.div
@@ -60,10 +60,10 @@ const AppWrapper = () => {
 
           {/* Animated loading text */}
           <motion.div 
-            className="text-white/60 text-7xl text-center"
+            className="text-white/60 text-6xl text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.5 }}
+            transition={{ delay: 1.75, duration: 0.5 }}
           >
             Starting up...
           </motion.div>

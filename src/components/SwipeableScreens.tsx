@@ -221,10 +221,10 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         }}
       >
         {/* Screen 1: Flight Tracking Clock */}
-        <div className="h-full flex-shrink-0 top-2 relative" style={{ width: '50%' }}>
+        <div className="h-full flex-shrink-0 top-[6px] relative" style={{ width: '50%' }}>
           {isClockLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
-              <div className="text-white/70 text-6xl font-medium text-center">Loading FlightClock...</div>
+              <div className="text-white/70 text-5xl font-medium text-center">Loading FlightClock...</div>
             </div>
           ) : (
             <FlightTrackingClock 
@@ -236,10 +236,10 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
         </div>
         
         {/* Screen 2: Flight Radar */}
-        <div className="h-full flex-shrink-0 top-2 relative" style={{ width: '50%' }}>
+        <div className="h-full flex-shrink-0 top-[6px] relative" style={{ width: '50%' }}>
           {isRadarLoading ? (
             <div className="w-round h-round rounded-round bg-black border-2 border-white/20 flex items-center justify-center">
-              <div className="text-white/70 text-6xl font-medium text-center">Loading FlightRadar...</div>
+              <div className="text-white/70 text-5xl font-medium text-center">Loading FlightRadar...</div>
             </div>
           ) : (
             <FlightRadar flightData={flightData} userConfig={userConfig} />
@@ -250,7 +250,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
       {/* Direction Selector Modal */}
       {showDirectionSelector && (
         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm">
-          <div className="w-round h-round rounded-round bg-black/95 border-2 border-white/20 flex items-center justify-center relative top-2">
+          <div className="w-round h-round rounded-round bg-black/95 border-2 border-white/20 flex items-center justify-center relative top-[6px]">
 
             {/* Direction selector */}
             <div className="text-center">
