@@ -55,12 +55,12 @@ const AppWrapper = () => {
               ease: "linear"
             }}
           >
-            <Plane className="w-12 h-12 text-white" />
+            <Plane className="w-20 h-20 text-white" />
           </motion.div>
 
           {/* Animated loading text */}
           <motion.div 
-            className="text-white/60 text-2xl text-center"
+            className="text-white/60 text-7xl text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 0.5 }}
