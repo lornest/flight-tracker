@@ -46,16 +46,16 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
     configRef.current = userConfig;
   }, [userConfig]);
 
-  const fetchFlights = useCallback(async () => {
+  const fetchFlights = useCallback(async (signal?: AbortSignal) => {
     // Prevent overlapping requests
     if (isFetchingRef.current) {
       return;
     }
-    
+
     isFetchingRef.current = true;
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // Build query params with user config if available
       const params = new URLSearchParams();
@@ -63,22 +63,25 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
       if (config?.latitude) params.set('lat', config.latitude.toString());
       if (config?.longitude) params.set('lon', config.longitude.toString());
       if (config?.facingDirection) params.set('facing', config.facingDirection);
-      
+
       const url = `/api/flights${params.toString() ? `?${params.toString()}` : ''}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { signal });
       const data: FlightData = await response.json();
-      
+
       if (data.error) {
         setError(data.error);
       } else {
         setFlightData(data);
-        
+
         // Check for new flights
         if (data.newFlights && data.newFlights.length > 0) {
           setHasNewFlight(true);
         }
       }
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to fetch flights');
     } finally {
       setIsLoading(false);
@@ -96,28 +99,45 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
     if (disabled) {
       return;
     }
-    
+
+    const controller = new AbortController();
+
     // Initial fetch with a small delay to avoid rapid-fire requests
     const initialTimeout = setTimeout(() => {
-      fetchFlights();
+      fetchFlights(controller.signal);
     }, 500);
-    
+
     const interval = setInterval(() => {
-      fetchFlights();
+      fetchFlights(controller.signal);
     }, intervalMs);
-    
+
     return () => {
+      controller.abort();
       clearTimeout(initialTimeout);
       clearInterval(interval);
     };
   }, [intervalMs, disabled, fetchFlights]);
 
 
-  // Memoize the Map conversion to avoid re-creating on every render
-  const allFlightInfoMap = useMemo(
-    () => flightData.allFlightInfo ? new Map(Object.entries(flightData.allFlightInfo)) : new Map<string, FlightInfo>(),
-    [flightData.allFlightInfo]
-  );
+  // Stabilise the Map reference — only rebuild when the set of hex keys changes
+  const prevInfoKeysRef = useRef('');
+  const cachedMapRef = useRef(new Map<string, FlightInfo>());
+
+  const allFlightInfoMap = useMemo(() => {
+    if (!flightData.allFlightInfo) {
+      if (prevInfoKeysRef.current !== '') {
+        prevInfoKeysRef.current = '';
+        cachedMapRef.current = new Map<string, FlightInfo>();
+      }
+      return cachedMapRef.current;
+    }
+    const keys = Object.keys(flightData.allFlightInfo).sort().join(',');
+    if (keys !== prevInfoKeysRef.current) {
+      prevInfoKeysRef.current = keys;
+      cachedMapRef.current = new Map(Object.entries(flightData.allFlightInfo));
+    }
+    return cachedMapRef.current;
+  }, [flightData.allFlightInfo]);
 
   return {
     flights: flightData.flights,

@@ -54,21 +54,25 @@ export class FlightTracker {
     }
 
     if (newFlightIds.length > 0) {
-      const flightInfoPromises = newFlightIds.map(async (hexCode) => {
-        const flight = this.state.currentFlights.get(hexCode);
-        if (flight?.flight) {
-          try {
-            const flightInfo = await getFlightInfo(flight.flight);
-            if (flightInfo) {
-              this.state.flightInfo.set(hexCode, flightInfo);
+      // Batch concurrent flight-info fetches (max 3 at a time) to cap peak memory
+      const BATCH_SIZE = 3;
+      for (let i = 0; i < newFlightIds.length; i += BATCH_SIZE) {
+        const batch = newFlightIds.slice(i, i + BATCH_SIZE).map(async (hexCode) => {
+          const flight = this.state.currentFlights.get(hexCode);
+          if (flight?.flight) {
+            try {
+              const flightInfo = await getFlightInfo(flight.flight);
+              if (flightInfo) {
+                this.state.flightInfo.set(hexCode, flightInfo);
+              }
+            } catch {
+              // Flight info lookup failed, non-critical
             }
-          } catch {
-            // Flight info lookup failed, non-critical
           }
-        }
-      });
+        });
 
-      await Promise.allSettled(flightInfoPromises);
+        await Promise.allSettled(batch);
+      }
     }
 
     this.evictOldFlightInfo();

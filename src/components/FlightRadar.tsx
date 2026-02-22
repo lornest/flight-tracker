@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Flight, FlightInfo } from '@/types/flight';
 import { calculatePlaneRotation, calculateDistance } from '@/lib/utils/bearing';
 
+const MAX_RADIUS_NM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
+
 interface FlightRadarProps {
   flightData: {
     flights: Flight[];
@@ -109,7 +111,7 @@ const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
             flight.lon
           );
 
-          const maxRadiusNM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
+          const maxRadiusNM = MAX_RADIUS_NM;
 
           if (distanceNM > maxRadiusNM) return null;
 
@@ -136,8 +138,7 @@ const FlightRadar = ({ flightData, userConfig }: FlightRadarProps) => {
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
-                transform: 'translate(-50%, -50%)',
-                transition: 'left 0.4s ease-out, top 0.4s ease-out'
+                transform: 'translate(-50%, -50%)'
               }}
               onClick={(e) => {
                 e.stopPropagation();

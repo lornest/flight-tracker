@@ -7,6 +7,8 @@ const Clock = () => {
   const secondHandRef = useRef<HTMLDivElement>(null);
   const minuteHandRef = useRef<HTMLDivElement>(null);
   const hourHandRef = useRef<HTMLDivElement>(null);
+  const prevRawRef = useRef({ seconds: -1, minutes: -1, hours: -1 });
+  const offsetRef = useRef({ seconds: 0, minutes: 0, hours: 0 });
 
   useEffect(() => {
     setMounted(true);
@@ -17,9 +19,27 @@ const Clock = () => {
       const minutes = now.getMinutes();
       const hours = now.getHours();
 
-      const secondAngle = seconds * 6;
-      const minuteAngle = minutes * 6 + seconds * 0.1;
-      const hourAngle = (hours % 12) * 30 + minutes * 0.5;
+      const rawSecond = seconds * 6;
+      const rawMinute = minutes * 6 + seconds * 0.1;
+      const rawHour = (hours % 12) * 30 + minutes * 0.5;
+
+      // When a hand crosses 12, the raw angle wraps from ~354 to 0.
+      // Add 360 to the offset so the cumulative angle keeps increasing,
+      // preventing the CSS transition from animating backwards.
+      if (prevRawRef.current.seconds >= 0 && rawSecond < prevRawRef.current.seconds) {
+        offsetRef.current.seconds += 360;
+      }
+      if (prevRawRef.current.minutes >= 0 && rawMinute < prevRawRef.current.minutes) {
+        offsetRef.current.minutes += 360;
+      }
+      if (prevRawRef.current.hours >= 0 && rawHour < prevRawRef.current.hours) {
+        offsetRef.current.hours += 360;
+      }
+      prevRawRef.current = { seconds: rawSecond, minutes: rawMinute, hours: rawHour };
+
+      const secondAngle = rawSecond + offsetRef.current.seconds;
+      const minuteAngle = rawMinute + offsetRef.current.minutes;
+      const hourAngle = rawHour + offsetRef.current.hours;
 
       if (secondHandRef.current) {
         secondHandRef.current.style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;

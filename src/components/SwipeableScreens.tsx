@@ -1,9 +1,20 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import FlightTrackingClock from './FlightTrackingClock';
 import FlightRadar from './FlightRadar';
 import { useFlightTracking } from '@/hooks/useFlightTracking';
+
+const DIRECTIONS = [
+  { value: 'N', label: 'North', angle: 0 },
+  { value: 'NE', label: 'Northeast', angle: 45 },
+  { value: 'E', label: 'East', angle: 90 },
+  { value: 'SE', label: 'Southeast', angle: 135 },
+  { value: 'S', label: 'South', angle: 180 },
+  { value: 'SW', label: 'Southwest', angle: 225 },
+  { value: 'W', label: 'West', angle: 270 },
+  { value: 'NW', label: 'Northwest', angle: 315 }
+] as const;
 
 interface SwipeableScreensProps {
   userConfig: {
@@ -47,21 +58,34 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
     }
   }, [currentScreen]);
 
-  const getPollingInterval = useCallback(() => {
-    if (currentScreen === 0 && !isClockLoading) {
-      return isAlertActive ? 5000 : 30000;
-    } else if (currentScreen === 1 && !isRadarLoading) {
-      return 5000;
-    } else {
-      return 30000;
-    }
-  }, [currentScreen, isAlertActive, isRadarLoading, isClockLoading]);
-
   const isAnyLoading = isRadarLoading || isClockLoading;
 
+  // Target polling interval based on current screen and alert state
+  const targetInterval = currentScreen === 1
+    ? 5000
+    : (isAlertActive ? 5000 : 30000);
+
+  // Debounce polling interval changes to avoid effect churn during transitions
+  const [stableInterval, setStableInterval] = useState(targetInterval);
+  const [stableDisabled, setStableDisabled] = useState(false);
+
+  useEffect(() => {
+    if (isAnyLoading) {
+      // Immediately disable polling during loading
+      setStableDisabled(true);
+      return;
+    }
+    // Debounce re-enabling polling after loading settles
+    const timer = setTimeout(() => {
+      setStableDisabled(false);
+      setStableInterval(targetInterval);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [isAnyLoading, targetInterval]);
+
   const flightData = useFlightTracking(
-    isAnyLoading ? 60000 : getPollingInterval(),
-    isAnyLoading,
+    stableInterval,
+    stableDisabled,
     userConfig
   );
 
@@ -147,17 +171,6 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
     };
   }, []);
 
-  const directions = [
-    { value: 'N', label: 'North', angle: 0 },
-    { value: 'NE', label: 'Northeast', angle: 45 },
-    { value: 'E', label: 'East', angle: 90 },
-    { value: 'SE', label: 'Southeast', angle: 135 },
-    { value: 'S', label: 'South', angle: 180 },
-    { value: 'SW', label: 'Southwest', angle: 225 },
-    { value: 'W', label: 'West', angle: 270 },
-    { value: 'NW', label: 'Northwest', angle: 315 }
-  ];
-
   return (
     <div
       ref={containerRef}
@@ -209,7 +222,7 @@ const SwipeableScreens = ({ userConfig, onConfigUpdate }: SwipeableScreensProps)
               <div className="relative w-[420px] h-[420px]">
                 <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
 
-                {directions.map((dir) => {
+                {DIRECTIONS.map((dir) => {
                   const angle = (dir.angle - 90) * (Math.PI / 180);
                   const x = Math.cos(angle) * 175;
                   const y = Math.sin(angle) * 175;

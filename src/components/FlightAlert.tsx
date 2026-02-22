@@ -5,6 +5,8 @@ import { Flight, FlightInfo } from '@/types/flight';
 import { calculatePlaneRotation, calculateDistance } from '@/lib/utils/bearing';
 import { getAirportData } from '@/lib/utils/airport';
 
+const MAX_RADIUS_NM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
+
 // Route display component with airport data fetching
 const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
   const [originData, setOriginData] = useState<{ location: string; name: string } | null>(null);
@@ -154,7 +156,7 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
             flight.lon
           );
 
-          const maxRadiusNM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
+          const maxRadiusNM = MAX_RADIUS_NM;
 
           const rotation = calculatePlaneRotation(
             userLocation.latitude,
