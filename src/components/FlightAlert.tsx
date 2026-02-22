@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
 import { Flight, FlightInfo } from '@/types/flight';
 import { calculatePlaneRotation, calculateDistance } from '@/lib/utils/bearing';
 import { getAirportData } from '@/lib/utils/airport';
+
+const MAX_RADIUS_NM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
 
 // Route display component with airport data fetching
 const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
@@ -16,25 +16,19 @@ const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
   useEffect(() => {
     const fetchAirportData = async () => {
       setLoading(true);
-      
-      console.log('RouteDisplay - flightInfo:', flightInfo); // Debug log
-      
-      // Fetch origin airport data
+
       const originIcao = flightInfo.origin?.icao;
       if (originIcao) {
-        console.log('Fetching origin airport data for:', originIcao);
         const originAirport = await getAirportData(originIcao);
         setOriginData(originAirport ? { location: originAirport.location, name: originAirport.name } : null);
       }
-      
-      // Fetch destination airport data
+
       const destIcao = flightInfo.destination?.icao;
       if (destIcao) {
-        console.log('Fetching destination airport data for:', destIcao);
         const destAirport = await getAirportData(destIcao);
         setDestData(destAirport ? { location: destAirport.location, name: destAirport.name } : null);
       }
-      
+
       setLoading(false);
     };
 
@@ -66,11 +60,11 @@ const RouteDisplay = ({ flightInfo }: { flightInfo: FlightInfo }) => {
             {originData.name}
           </div>
         </div>
-        
+
         <div className="flex items-center justify-center pt-1">
-          <span className="text-white/70 text-2xl">→</span>
+          <span className="text-white/70 text-2xl">&rarr;</span>
         </div>
-        
+
         <div className="text-center">
           <div className="mb-1">{destData.location}</div>
           <div className="text-white/60 text-xl font-normal leading-tight break-words">
@@ -97,13 +91,10 @@ interface FlightAlertProps {
 }
 
 const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, userLocation, onDismiss }: FlightAlertProps) => {
-  // Preserve flight info during the alert period to prevent loss of route information
   const [preservedFlightInfo, setPreservedFlightInfo] = useState<Array<{ hexCode: string; flight: Flight; info?: FlightInfo }>>([]);
-  
-  // Update preserved flight info when new flights with info arrive
+
   useEffect(() => {
     if (newFlightsWithInfo && newFlightsWithInfo.length > 0) {
-      // Merge new flight info with existing preserved info, avoiding duplicates
       setPreservedFlightInfo(prevInfo => {
         const existingHexCodes = prevInfo.map(f => f.hexCode);
         const newInfo = newFlightsWithInfo.filter(f => !existingHexCodes.includes(f.hexCode));
@@ -111,32 +102,22 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
       });
     }
   }, [newFlightsWithInfo]);
-  
-  // Clear preserved info when alert is dismissed
+
   useEffect(() => {
     if (!isVisible) {
       setPreservedFlightInfo([]);
     }
   }, [isVisible]);
-  
+
   if (!isVisible) return null;
 
-
   return (
-    <motion.div
-      className="w-round h-round rounded-round bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex flex-col items-center justify-center overflow-hidden relative shadow-2xl alert-container"
-      initial={{ scale: 0, rotate: -180 }}
-      animate={{ scale: 1, rotate: 0 }}
-      exit={{ scale: 0, rotate: 180 }}
-      transition={{ type: "tween", duration: 0.4, ease: "easeOut" }}
+    <div
+      className="w-round h-round rounded-round bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex flex-col items-center justify-center overflow-hidden relative shadow-2xl alert-container alert-enter"
     >
       {/* Animated background pattern */}
       <div className="absolute inset-0 opacity-10">
-        <motion.div
-          className="absolute inset-0"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        >
+        <div className="absolute inset-0 alert-bg-spin">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
@@ -148,41 +129,35 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
               }}
             />
           ))}
-        </motion.div>
+        </div>
       </div>
 
       {/* Close button */}
       <button
         onClick={onDismiss}
-        className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+        className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
       >
-        <X className="w-6 h-6 text-white/70" />
+        <svg className="w-6 h-6 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
 
       {/* Main content */}
-      <motion.div
-        className="text-center z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-
+      <div className="text-center z-10 alert-content-fade">
         {/* Real-time beacons for all current flights */}
-        {userLocation && allFlights && allFlights.slice(0, 8).map((flight, index) => {
-          // Skip flights without valid coordinates
+        {userLocation && allFlights && allFlights.slice(0, 8).map((flight) => {
           if (!flight.lat || !flight.lon) return null;
-          
-          // Calculate distance from user location to aircraft
+
           const distanceNM = calculateDistance(
             userLocation.latitude,
             userLocation.longitude,
             flight.lat,
             flight.lon
           );
-          
-          // Get the maximum radius from environment variable (default 10 NM)
-          const maxRadiusNM = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
-          
+
+          const maxRadiusNM = MAX_RADIUS_NM;
+
           const rotation = calculatePlaneRotation(
             userLocation.latitude,
             userLocation.longitude,
@@ -190,56 +165,39 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
             flight.lon,
             userLocation.facingDirection
           );
-          
-          // Calculate position based on actual distance (matching FlightRadar logic)
-          // Use same radius as FlightRadar so distances match between screens
-          const maxScreenRadius = 240 * 0.85; // Same as FlightRadar: 85% of full radius
-          const distanceRatio = Math.min(distanceNM / maxRadiusNM, 1); // Cap at 1.0
+
+          const maxScreenRadius = 240 * 0.85;
+          const distanceRatio = Math.min(distanceNM / maxRadiusNM, 1);
           const screenRadius = distanceRatio * maxScreenRadius;
-          
-          const angleRad = (rotation - 90) * (Math.PI / 180); // -90 to make 0° point up
+
+          const angleRad = (rotation - 90) * (Math.PI / 180);
           const x = Math.cos(angleRad) * screenRadius;
           const y = Math.sin(angleRad) * screenRadius;
-          
-          // Determine if this is a new flight for highlighting
+
           const isNewFlight = newFlights.includes(flight.hex);
-          
+
           return (
-            <motion.div
+            <div
               key={flight.hex}
-              className="absolute z-20"
+              className={`absolute z-20 ${isNewFlight ? 'alert-beacon-new' : ''}`}
               style={{
-                transform: 'translate(-50%, -50%)'
-              }}
-              initial={{ 
-                scale: 0, 
-                opacity: 0,
-                left: '50%',
-                top: '50%'
-              }}
-              animate={{ 
-                scale: 1, 
-                opacity: 1,
                 left: `calc(50% + ${x}px)`,
-                top: `calc(50% + ${y}px)`
-              }}
-              transition={{ 
-                delay: isNewFlight ? 0.3 + index * 0.05 : 0,
-                duration: 0.4,
-                ease: "easeOut"
+                top: `calc(50% + ${y}px)`,
+                transform: 'translate(-50%, -50%)',
+                transition: 'left 0.4s ease-out, top 0.4s ease-out'
               }}
             >
               {/* Triangle beacon pointing inward */}
               <div
                 className="w-0 h-0 border-l-[10px] border-r-[10px] border-b-[14px] border-l-transparent border-r-transparent border-b-yellow-300"
                 style={{
-                  transform: `rotate(${rotation + 180}deg)`, // +180 to point inward toward center
+                  transform: `rotate(${rotation + 180}deg)`,
                   filter: 'drop-shadow(0 0 6px rgba(255, 255, 0, 0.8))'
                 }}
               />
               {/* Flight number label */}
               {flight.flight && (
-                <div 
+                <div
                   className="absolute text-sm font-semibold whitespace-nowrap text-yellow-300"
                   style={{
                     left: '50%',
@@ -251,85 +209,48 @@ const FlightAlert = ({ isVisible, newFlights, newFlightsWithInfo, allFlights, us
                   {flight.flight}
                 </div>
               )}
-            </motion.div>
+            </div>
           );
         })}
 
-        {/* Alert text */}
-        {/* <motion.h1
-          className="text-4xl font-light text-white mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          New Flight!
-        </motion.h1> */}
-        
         {/* Flight details */}
         {preservedFlightInfo && preservedFlightInfo.length > 0 && (
-          <motion.div
-            className="space-y-3 mb-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-          >
-            {preservedFlightInfo.slice(0, 2).map((flightData, index) => {
+          <div className="space-y-3 mb-4 alert-details-fade">
+            {preservedFlightInfo.slice(0, 2).map((flightData) => {
               return (
-                <motion.div
+                <div
                   key={flightData.hexCode}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
+                  className="bg-white/10 rounded-lg p-3 text-center"
                 >
-                  {/* Flight number */}
                   {flightData.flight.flight && (
                     <div className="text-white font-semibold text-4xl mb-3">
                       {flightData.flight.flight}
                     </div>
                   )}
-                  
-                
-                {/* Route information */}
-                {flightData.info ? (
-                  <RouteDisplay flightInfo={flightData.info} />
-                ) : (
-                  <div className="text-white/60 text-base">
-                    Aircraft: {flightData.flight.type || 'Unknown'}
-                  </div>
-                )}
-                </motion.div>
+
+                  {flightData.info ? (
+                    <RouteDisplay flightInfo={flightData.info} />
+                  ) : (
+                    <div className="text-white/60 text-base">
+                      Aircraft: {flightData.flight.type || 'Unknown'}
+                    </div>
+                  )}
+                </div>
               );
             })}
-            
+
             {preservedFlightInfo.length > 2 && (
-              <motion.div
-                className="text-white/60 text-base"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-              >
+              <div className="text-white/60 text-base">
                 +{preservedFlightInfo.length - 2} more
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Pulsing ring animation */}
-      <motion.div
-        className="absolute inset-8 rounded-full border-2 border-white/20"
-        animate={{ 
-          scale: [1, 1.1, 1],
-          opacity: [0.2, 0.5, 0.2]
-        }}
-        transition={{ 
-          duration: 3, 
-          repeat: Infinity, 
-          ease: "easeInOut" 
-        }}
-      />
-    </motion.div>
+      <div className="absolute inset-8 rounded-full border-2 border-white/20 alert-pulse-ring" />
+    </div>
   );
 };
 

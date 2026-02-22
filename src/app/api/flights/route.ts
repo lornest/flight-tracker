@@ -1,11 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchFlightsInRadius, filterValidFlights } from '@/lib/api/adsb';
 import { flightTracker } from '@/lib/utils/flight-tracker';
+import { Flight } from '@/types/flight';
 
 const DEFAULT_LAT = parseFloat(process.env.NEXT_PUBLIC_LATITUDE || '55.978371');
 const DEFAULT_LON = parseFloat(process.env.NEXT_PUBLIC_LONGITUDE || '-3.59423');
 const DEFAULT_RADIUS = parseInt(process.env.NEXT_PUBLIC_RADIUS_NM || '10');
 const USER_FACING_DIRECTION = process.env.NEXT_PUBLIC_FACING_DIRECTION || 'N';
+
+// Strip fields the client never uses to reduce JSON size and GC pressure
+function slimFlight(f: Flight) {
+  return {
+    hex: f.hex,
+    flight: f.flight,
+    lat: f.lat,
+    lon: f.lon,
+    alt_baro: f.alt_baro,
+    gs: f.gs,
+    track: f.track,
+    baro_rate: f.baro_rate,
+    type: f.t || f.type
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,61 +31,44 @@ export async function GET(request: NextRequest) {
     const radius = parseFloat(searchParams.get('radius') || DEFAULT_RADIUS.toString());
     const facing = searchParams.get('facing') || USER_FACING_DIRECTION;
 
-    // Fetch flights
     const adsbData = await fetchFlightsInRadius(lat, lon, radius);
-    
+
+    const userLocation = { latitude: lat, longitude: lon, facingDirection: facing };
+
     if (!adsbData.aircraft || adsbData.aircraft.length === 0) {
-      const allFlightInfo = flightTracker.getAllFlightInfo();
-      const allFlightInfoObj = Object.fromEntries(allFlightInfo);
-      
-      return NextResponse.json({ 
-        flights: [], 
+      return NextResponse.json({
+        flights: [],
         newFlights: [],
         newFlightsWithInfo: [],
-        allFlightInfo: allFlightInfoObj,
+        allFlightInfo: flightTracker.getAllFlightInfo(),
         total: 0,
         timestamp: Date.now(),
         lastUpdate: flightTracker.getLastUpdate(),
-        userLocation: {
-          latitude: lat,
-          longitude: lon,
-          facingDirection: facing
-        }
+        userLocation
       });
     }
 
-    // Filter valid flights
     const validFlights = filterValidFlights(adsbData.aircraft);
-    
-    // Update flight tracker and detect new flights (now async)
+
     const newFlightIds = await flightTracker.updateFlights(validFlights);
-    
-    // Get new flights with their information
+
     const newFlightsWithInfo = flightTracker.getNewFlightsWithInfo();
-    const allFlightInfo = flightTracker.getAllFlightInfo();
-    
-    // Convert Map to plain object for JSON serialization
-    const allFlightInfoObj = Object.fromEntries(allFlightInfo);
-    
+
     return NextResponse.json({
-      flights: validFlights,
+      flights: validFlights.map(slimFlight),
       newFlights: newFlightIds,
-      newFlightsWithInfo: newFlightsWithInfo,
-      allFlightInfo: allFlightInfoObj,
+      newFlightsWithInfo,
+      allFlightInfo: flightTracker.getAllFlightInfo(),
       total: validFlights.length,
       timestamp: Date.now(),
       lastUpdate: flightTracker.getLastUpdate(),
-      userLocation: {
-        latitude: lat,
-        longitude: lon,
-        facingDirection: facing
-      }
+      userLocation
     });
-    
+
   } catch (error) {
     console.error('Flights API error:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch flight data',
         details: error instanceof Error ? error.message : 'Unknown error',
         flights: [],

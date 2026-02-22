@@ -10,11 +10,23 @@ interface AirportData {
   name: string;
 }
 
-// Cache for airport data to avoid repeated API calls
+// Bounded cache for airport data
+const MAX_AIRPORT_CACHE = 100;
 const airportCache = new Map<string, AirportData | null>();
 
+function evictIfNeeded() {
+  if (airportCache.size <= MAX_AIRPORT_CACHE) return;
+  // Remove oldest entries (first inserted in Map iteration order)
+  const excess = airportCache.size - MAX_AIRPORT_CACHE;
+  let removed = 0;
+  for (const key of airportCache.keys()) {
+    if (removed >= excess) break;
+    airportCache.delete(key);
+    removed++;
+  }
+}
+
 export async function getAirportData(icao: string): Promise<AirportData | null> {
-  // Check cache first
   if (airportCache.has(icao)) {
     return airportCache.get(icao) || null;
   }
@@ -24,13 +36,14 @@ export async function getAirportData(icao: string): Promise<AirportData | null> 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    
+
     const data: AirportData = await response.json();
     airportCache.set(icao, data);
+    evictIfNeeded();
     return data;
-  } catch (error) {
-    console.warn(`Failed to fetch airport data for ${icao}:`, error);
+  } catch {
     airportCache.set(icao, null);
+    evictIfNeeded();
     return null;
   }
 }

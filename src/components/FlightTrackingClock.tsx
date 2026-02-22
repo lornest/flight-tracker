@@ -1,7 +1,6 @@
 "use client";
 
-import React from 'react';
-import { AnimatePresence } from 'framer-motion';
+import React, { useEffect, useCallback, useState } from 'react';
 import Clock from './Clock';
 import FlightAlert from './FlightAlert';
 import { Flight, FlightInfo } from '@/types/flight';
@@ -40,59 +39,48 @@ const FlightTrackingClock = ({ sharedFlightData, setIsAlertActive }: FlightTrack
     refetch
   } = sharedFlightData;
 
-  // Manage alert state and polling frequency
-  React.useEffect(() => {
+  const [showAlert, setShowAlert] = useState(false);
+
+  useEffect(() => {
     if (hasNewFlight) {
       setIsAlertActive(true);
-      
-      // Auto-dismiss alert after 30 seconds
+      setShowAlert(true);
+
       const timer = setTimeout(() => {
         clearNewFlightAlert();
         setIsAlertActive(false);
+        setShowAlert(false);
       }, 30000);
-      
+
       return () => clearTimeout(timer);
     } else {
       setIsAlertActive(false);
+      setShowAlert(false);
     }
   }, [hasNewFlight, clearNewFlightAlert, setIsAlertActive]);
-  
-  // Manual dismiss handler
-  const handleDismiss = React.useCallback(() => {
+
+  const handleDismiss = useCallback(() => {
     clearNewFlightAlert();
     setIsAlertActive(false);
+    setShowAlert(false);
   }, [clearNewFlightAlert, setIsAlertActive]);
-
-  // Log flight updates for debugging
-  React.useEffect(() => {
-    if (flights.length > 0) {
-      console.log(`${flights.length} flights in area:`, flights.map(f => ({
-        hex: f.hex,
-        flight: f.flight || 'Unknown',
-        alt: f.alt_baro || 'N/A'
-      })));
-    }
-  }, [flights]);
 
   return (
     <div className="relative">
-      <AnimatePresence mode="wait">
-        {hasNewFlight ? (
-          <FlightAlert
-            key="alert"
-            isVisible={hasNewFlight}
-            flightCount={totalFlights}
-            newFlights={newFlights}
-            newFlightsWithInfo={newFlightsWithInfo}
-            allFlights={flights}
-            userLocation={userLocation}
-            onDismiss={handleDismiss}
-          />
-        ) : (
-          <Clock key="clock" />
-        )}
-      </AnimatePresence>
-      
+      {showAlert && hasNewFlight ? (
+        <FlightAlert
+          isVisible={hasNewFlight}
+          flightCount={totalFlights}
+          newFlights={newFlights}
+          newFlightsWithInfo={newFlightsWithInfo}
+          allFlights={flights}
+          userLocation={userLocation}
+          onDismiss={handleDismiss}
+        />
+      ) : (
+        <Clock />
+      )}
+
       {/* Debug info (remove in production) */}
       {process.env.NODE_ENV === 'development' && (
         <div className="absolute top-4 left-4 bg-black/50 text-white text-xs p-2 rounded backdrop-blur-sm">
@@ -101,7 +89,7 @@ const FlightTrackingClock = ({ sharedFlightData, setIsAlertActive }: FlightTrack
           <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
           <div>Error: {error || 'None'}</div>
           <div>Last: {lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : 'Never'}</div>
-          <button 
+          <button
             onClick={refetch}
             className="mt-1 px-2 py-1 bg-blue-600 rounded text-xs"
           >
