@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Flight, FlightInfo } from '@/types/flight';
 
 interface FlightData {
@@ -113,11 +113,17 @@ export function useFlightTracking(intervalMs: number = 10000, disabled: boolean 
   }, [intervalMs, disabled, fetchFlights]);
 
 
+  // Memoize the Map conversion to avoid re-creating on every render
+  const allFlightInfoMap = useMemo(
+    () => flightData.allFlightInfo ? new Map(Object.entries(flightData.allFlightInfo)) : new Map<string, FlightInfo>(),
+    [flightData.allFlightInfo]
+  );
+
   return {
     flights: flightData.flights,
     newFlights: flightData.newFlights,
     newFlightsWithInfo: flightData.newFlightsWithInfo || [],
-    allFlightInfo: flightData.allFlightInfo ? new Map(Object.entries(flightData.allFlightInfo)) : new Map(),
+    allFlightInfo: allFlightInfoMap,
     totalFlights: flightData.total,
     lastUpdate: flightData.lastUpdate,
     userLocation: flightData.userLocation,

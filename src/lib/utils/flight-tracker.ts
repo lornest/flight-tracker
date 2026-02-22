@@ -1,6 +1,9 @@
 import { Flight, FlightState, FlightInfo } from '@/types/flight';
 import { getFlightInfo } from '@/lib/api/hexdb';
 
+// Maximum number of flight info entries to keep cached
+const MAX_FLIGHT_INFO_ENTRIES = 50;
+
 export class FlightTracker {
   private state: FlightState = {
     currentFlights: new Map(),
@@ -9,30 +12,48 @@ export class FlightTracker {
     lastUpdate: 0
   };
 
+  // Evict oldest entries when flightInfo exceeds the cap
+  private evictOldFlightInfo(): void {
+    if (this.state.flightInfo.size <= MAX_FLIGHT_INFO_ENTRIES) return;
+
+    const currentHexCodes = new Set(this.state.currentFlights.keys());
+    // First pass: remove entries for flights no longer in range
+    for (const hex of this.state.flightInfo.keys()) {
+      if (!currentHexCodes.has(hex)) {
+        this.state.flightInfo.delete(hex);
+      }
+    }
+
+    // Second pass: if still over limit, remove oldest entries (first inserted)
+    if (this.state.flightInfo.size > MAX_FLIGHT_INFO_ENTRIES) {
+      const excess = this.state.flightInfo.size - MAX_FLIGHT_INFO_ENTRIES;
+      let removed = 0;
+      for (const hex of this.state.flightInfo.keys()) {
+        if (removed >= excess) break;
+        this.state.flightInfo.delete(hex);
+        removed++;
+      }
+    }
+  }
+
   async updateFlights(flights: Flight[]): Promise<string[]> {
     const now = Date.now();
     const previousFlightIds = new Set(this.state.currentFlights.keys());
     const newFlightIds: string[] = [];
-    
-    // Update current flights map
+
     this.state.currentFlights.clear();
-    
-    flights.forEach(flight => {
+
+    for (const flight of flights) {
       if (flight.hex) {
         this.state.currentFlights.set(flight.hex, flight);
-        
-        // Check if this is a new flight
+
         if (!previousFlightIds.has(flight.hex)) {
           newFlightIds.push(flight.hex);
         }
       }
-    });
-    
-    // Fetch flight information for new flights
+    }
+
     if (newFlightIds.length > 0) {
-      console.log(`Fetching info for ${newFlightIds.length} new flights:`, newFlightIds);
-      
-      // Process new flights to get their information
       const flightInfoPromises = newFlightIds.map(async (hexCode) => {
         const flight = this.state.currentFlights.get(hexCode);
         if (flight?.flight) {
@@ -40,21 +61,21 @@ export class FlightTracker {
             const flightInfo = await getFlightInfo(flight.flight);
             if (flightInfo) {
               this.state.flightInfo.set(hexCode, flightInfo);
-              console.log(`Flight info for ${flight.flight}:`, flightInfo);
             }
-          } catch (error) {
-            console.error(`Failed to fetch info for flight ${flight.flight}:`, error);
+          } catch {
+            // Flight info lookup failed, non-critical
           }
         }
       });
-      
-      // Execute all flight info requests in parallel
+
       await Promise.allSettled(flightInfoPromises);
     }
-    
+
+    this.evictOldFlightInfo();
+
     this.state.newFlights = newFlightIds;
     this.state.lastUpdate = now;
-    
+
     return newFlightIds;
   }
 
@@ -82,8 +103,8 @@ export class FlightTracker {
     return this.state.flightInfo.get(hexCode);
   }
 
-  getAllFlightInfo(): Map<string, FlightInfo> {
-    return new Map(this.state.flightInfo);
+  getAllFlightInfo(): Record<string, FlightInfo> {
+    return Object.fromEntries(this.state.flightInfo);
   }
 
   getNewFlightsWithInfo(): Array<{ hexCode: string; flight: Flight; info?: FlightInfo }> {

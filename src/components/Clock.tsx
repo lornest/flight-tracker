@@ -1,74 +1,54 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 
 const Clock = () => {
-  const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
-  const [secondRotations, setSecondRotations] = useState(0);
-  const [minuteRotations, setMinuteRotations] = useState(0);
-  const [hourRotations, setHourRotations] = useState(0);
+  const secondHandRef = useRef<HTMLDivElement>(null);
+  const minuteHandRef = useRef<HTMLDivElement>(null);
+  const hourHandRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
-    const initialTime = new Date();
-    let prevSeconds = initialTime.getSeconds();
-    let prevMinutes = initialTime.getMinutes();
-    let prevHours = initialTime.getHours() % 12;
-    
-    const timer = setInterval(() => {
-      const newTime = new Date();
-      const currentSeconds = newTime.getSeconds();
-      const currentMinutes = newTime.getMinutes();
-      const currentHours = newTime.getHours() % 12;
-      
-      // Check if seconds wrapped from 59 to 0
-      if (prevSeconds === 59 && currentSeconds === 0) {
-        setSecondRotations(prev => prev + 360);
-      }
-      
-      // Check if minutes wrapped from 59 to 0
-      if (prevMinutes === 59 && currentMinutes === 0) {
-        setMinuteRotations(prev => prev + 360);
-      }
-      
-      // Check if hours wrapped from 11 to 0 (12-hour format)
-      if (prevHours === 11 && currentHours === 0) {
-        setHourRotations(prev => prev + 360);
-      }
-      
-      setTime(newTime);
-      prevSeconds = currentSeconds;
-      prevMinutes = currentMinutes;
-      prevHours = currentHours;
-    }, 1000);
 
+    const updateHands = () => {
+      const now = new Date();
+      const seconds = now.getSeconds();
+      const minutes = now.getMinutes();
+      const hours = now.getHours();
+
+      const secondAngle = seconds * 6;
+      const minuteAngle = minutes * 6 + seconds * 0.1;
+      const hourAngle = (hours % 12) * 30 + minutes * 0.5;
+
+      if (secondHandRef.current) {
+        secondHandRef.current.style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;
+      }
+      if (minuteHandRef.current) {
+        minuteHandRef.current.style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
+      }
+      if (hourHandRef.current) {
+        hourHandRef.current.style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
+      }
+    };
+
+    updateHands();
+    const timer = setInterval(updateHands, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <div className="w-round h-round rounded-round bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center overflow-hidden relative">
+      <div className="w-round h-round rounded-round bg-black flex items-center justify-center overflow-hidden relative">
         <div className="text-white/20">Loading...</div>
       </div>
     );
   }
 
-  const hours = time.getHours();
-  const minutes = time.getMinutes();
-  const seconds = time.getSeconds();
-
-  // Calculate angles for clock hands with accumulated rotations to prevent backwards jumping
-  const secondAngle = (seconds * 6) - 90 + secondRotations; // 6 degrees per second + accumulated rotations
-  const minuteAngle = (minutes * 6) + (seconds * 0.1) - 90 + minuteRotations; // 6 degrees per minute + smooth second movement + accumulated rotations
-  const hourAngle = ((hours % 12) * 30) + (minutes * 0.5) - 90 + hourRotations; // 30 degrees per hour + smooth minute movement + accumulated rotations
-
   // Generate all 60 minute markers
   const minuteMarkers = Array.from({ length: 60 }, (_, i) => ({
-    angle: i * 6, // 6 degrees per minute
-    isFiveMinute: i % 5 === 0 // Every 5th minute (0, 5, 10, 15, etc.)
+    angle: i * 6,
+    isFiveMinute: i % 5 === 0
   }));
 
   return (
@@ -79,9 +59,9 @@ const Clock = () => {
           <div
             key={angle}
             className={`absolute bg-white origin-bottom ${
-              isFiveMinute 
-                ? 'w-1 h-8' // Longer, thicker markers for 5-minute intervals
-                : 'w-0.5 h-4'   // Shorter, thinner markers for single minutes
+              isFiveMinute
+                ? 'w-1 h-8'
+                : 'w-0.5 h-4'
             }`}
             style={{
               top: isFiveMinute ? '16px' : '19px',
@@ -96,45 +76,42 @@ const Clock = () => {
       {/* Clock hands */}
       <div className="absolute inset-0 rounded-full">
         {/* Hour hand */}
-        <motion.div
-          className="absolute w-2 bg-white origin-bottom clock-hand"
+        <div
+          ref={hourHandRef}
+          className="absolute w-2 bg-white clock-hand"
           style={{
             height: '120px',
             top: '120px',
             left: '50%',
-            transform: `translateX(-50%) rotate(${hourAngle}deg)`,
-            transformOrigin: '50% 120px'
+            transformOrigin: '50% 120px',
+            transition: 'transform 0.5s ease-out'
           }}
-          animate={{ rotate: hourAngle + 90 }}
-          transition={{ type: "tween", duration: 0.5, ease: "easeOut" }}
         />
-        
+
         {/* Minute hand */}
-        <motion.div
-          className="absolute w-1.5 bg-white origin-bottom clock-hand"
+        <div
+          ref={minuteHandRef}
+          className="absolute w-1.5 bg-white clock-hand"
           style={{
             height: '160px',
             top: '80px',
             left: '50%',
-            transform: `translateX(-50%) rotate(${minuteAngle}deg)`,
-            transformOrigin: '50% 160px'
+            transformOrigin: '50% 160px',
+            transition: 'transform 0.5s ease-out'
           }}
-          animate={{ rotate: minuteAngle + 90 }}
-          transition={{ type: "tween", duration: 0.5, ease: "easeOut" }}
         />
-        
+
         {/* Second hand */}
-        <motion.div
-          className="absolute w-0.5 bg-white origin-bottom clock-hand"
+        <div
+          ref={secondHandRef}
+          className="absolute w-0.5 bg-white clock-hand"
           style={{
             height: '180px',
             top: '60px',
             left: '50%',
-            transform: `translateX(-50%) rotate(${secondAngle}deg)`,
-            transformOrigin: '50% 180px'
+            transformOrigin: '50% 180px',
+            transition: 'transform 0.2s ease-out'
           }}
-          animate={{ rotate: secondAngle + 90 }}
-          transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
         />
       </div>
 
